@@ -1,9 +1,9 @@
 # Invoke-Tasks
-Powershell based task processing
+Powershell based task processing. You do not require an other module.
 
 ## Quickstart
 
-Define a **tasks.ps1** with following content:
+Simply define a **tasks.ps1** with following content:
 
 ```powershell
 Register-Task -Name "Demo" {
@@ -28,5 +28,6 @@ hello world!
 Invoke-Tasks ::  ... took 0,0088361 seconds!
 ```
 
+Invoke-Task does look for a **tasks.ps1** in current working directory.
 You also can use `Invoke-Tasks -TaskFile demo.ps1` for specifying another path
 and filename.
