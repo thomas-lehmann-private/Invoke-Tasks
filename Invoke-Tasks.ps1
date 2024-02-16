@@ -80,7 +80,7 @@ if ($uniqueTasks.Count -ne $tasks.Count) {
 if (-not $Quiet) {
     Write-Message ("Running on OS {0}" -f $PSVersionTable.OS)
     Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
-    Write-Message("   ... task data {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
+    Write-Message ("  ... task data {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
     Write-Message ("  ... {0} tasks found in {1}" -f $tasks.Count, $ScriptFile)
 
     $tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
