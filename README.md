@@ -27,3 +27,6 @@ Invoke-Tasks :: Running task 'Demo'
 hello world!
 Invoke-Tasks ::  ... took 0,0088361 seconds!
 ```
+
+You also can use `Invoke-Tasks -TaskFile demo.ps1` for specifying another path
+and filename.
