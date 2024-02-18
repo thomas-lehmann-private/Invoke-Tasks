@@ -1,4 +1,4 @@
-Register-Task -Name "Static code analysis" {
+Register-Task -Name "Static code analysis" -Tag "check-code" {
     
     $results = Invoke-ScriptAnalyzer ./Invoke-Tasks.ps1
     $results | Format-Table
@@ -14,12 +14,15 @@ Register-Task -Name "Pester Tests" {
         }
         CodeCoverage = @{
             Enabled = $true
-            CoveragePercentTarget = 80
+            CoveragePercentTarget = 88
             Path = @('./Invoke-Tasks.ps1')
         }
         TestResult = @{
             Enabled = $true
             OutputFormat = 'JUnitXml'
+        }
+        Output = @{
+            Verbosity = 'Detailed'
         }
     }
 

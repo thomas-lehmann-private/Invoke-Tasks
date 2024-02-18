@@ -33,6 +33,11 @@
 .PARAMETER TaskData
     Possibility to give parameters to the tasks (default is empty hashtable)
     The data can be modified by the tasks
+.PARAMETER Tags
+    When specifying you can filter for tasks, all others will be adjusted to
+    completed without being executed then.
+.PARAMETER Quiet
+    Hide all output except errors and task output itself
 .NOTES
     Runs on all plattforms
 #>
@@ -41,6 +46,7 @@
 param (
     [String] $TaskFile = './tasks.ps1',
     [Hashtable] $TaskData = @{},
+    [String[]] $Tags = @(),
     [switch] $Quiet = $false
 )
 
@@ -55,6 +61,7 @@ function Register-Task() {
     param (
         [String] $Name,
         [scriptblock] $ScriptBlock,
+        [String[]] $Tags = @(),
         [String] $DependsOn = $null,
         [Switch] $Skip = $false
     )
@@ -62,6 +69,7 @@ function Register-Task() {
     $global:tasks += [PSCustomObject] @{
         Name = $Name
         ScriptBlock = $ScriptBlock
+        Tags = $Tags
         DependsOn = $DependsOn
         Skip = $Skip
         Completed = $false
@@ -95,6 +103,21 @@ while (-not $errorFound) {
             continue
         }
 
+        if ($Tags.Count -gt 0) {
+            $foundTag = $false
+            foreach ($tag in $Tags) {
+                if ($Task.Tags -contains $tag) {
+                    $foundTag = $true
+                    break
+                }
+            }
+
+            if (-not $foundTag) {
+                $task.Completed = $true
+                continue
+            }
+        }
+
         if ($task.DependsOn) {
             $dependencies = $global:tasks | Where-Object { $_.Name -eq $task.DependsOn }
             if ($dependencies.Count -ne 1) {
@@ -107,14 +130,19 @@ while (-not $errorFound) {
             }
         }
 
-        Write-Message ("Running task '{0}'" -f $task.Name)
+        if (-not $Quiet) {
+            Write-Message ("Running task '{0}'" -f $task.Name)
+        }
+
         try {
             $performance = Measure-Command {
                 Invoke-Command `
                     -ScriptBlock $task.ScriptBlock `
                     -ArgumentList $TaskData | Out-Default
             }
-            Write-Message (" ... took {0} seconds!" -f $performance.TotalSeconds)
+            if (-not $Quiet) {
+                Write-Message (" ... took {0} seconds!" -f $performance.TotalSeconds)
+            }
         } catch {
             Write-Error ("{0}" -f $_)
             $errorFound = $true
