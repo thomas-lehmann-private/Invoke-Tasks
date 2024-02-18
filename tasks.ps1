@@ -28,5 +28,5 @@ Register-Task -Name "Pester Tests" {
 
     $configuration = New-PesterConfiguration -Hashtable $options
     Invoke-Pester -Configuration $configuration
-    reportgenerator -reports:./coverage.xml -targetdir:html
+    #reportgenerator -reports:./coverage.xml -targetdir:html
 }
