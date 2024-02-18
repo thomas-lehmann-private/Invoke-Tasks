@@ -1,5 +1,5 @@
 # Invoke-Tasks
-Powershell based task processing tool. You do not require another module.
+Powershell based task processing. You do not require another module.
 
 ## Quickstart
 
