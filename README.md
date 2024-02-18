@@ -31,3 +31,32 @@ Invoke-Tasks ::  ... took 0,0088361 seconds!
 Invoke-Task does look for a **tasks.ps1** in current working directory.
 You also can use `Invoke-Tasks -TaskFile demo.ps1` for specifying another path
 and filename.
+
+## Dependencies
+
+For each Task you can specify exactly one dependeny by using the
+name of the related task. With this you can change the order of
+the execution.
+
+```powershell
+Register-Task -Name "First Task" -DependsOn "Second Task" {
+    Write-Host "First Task"
+}
+
+Register-Task -Name "Second Task" {
+    Write-Host "Second Task"
+}
+```
+
+The output of the second tasks appeasr first.
+
+## Quiet
+
+You can specify `-Quiet` when using `Invoke-Tasks` then
+you see errors and the output of the tasks itself only.
+
+## Tags
+
+You can specify multiple tags at each task.
+When specifying one of those tags with `Invoke-Tasks`
+only those tasks are executed that do match.
