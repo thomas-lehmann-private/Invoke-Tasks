@@ -1,5 +1,5 @@
 # Invoke-Tasks
-Powershell based task processing. You do not require an other module.
+Powershell based task processing. You do not require another module.
 
 ## Quickstart
 
@@ -14,7 +14,7 @@ Register-Task -Name "Demo" {
 When executing `Invoke-Tasks` the result looks like following (OS and Powershell version depend on your system):
 
 ```
-Invoke-Tasks :: Running on OS Darwin 23.2.0 Darwin Kernel Version 23.2.0: Wed Nov 15 21:53:18 PST 2023; root:xnu-10002.61.3~2/RELEASE_ARM64_T6000
+Invoke-Tasks :: Running on OS Darwin 23.2.0 Darwin Kernel Version 23.2.0: Wed Nov 15 21:53:18 PST 2023; root:xnu-10002.61.3~2/RELEASE_ARM64_T6000‚
 Invoke-Tasks :: Running with Powershell in version 7.4.1
 Invoke-Tasks ::   ... task data {}
 Invoke-Tasks ::   ... 1 tasks found in 
