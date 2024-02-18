@@ -11,9 +11,12 @@ jobs:
     name: Build on ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2           # checks out of repository and download it to the runner
+      - uses: actions/checkout@v2            # checks out of repository and download it to the runner
       - run: pwsh -file ./Invoke-Tasks.ps1
-      - uses: codecov/codecov-action@v1     # publishing code coverage results
+      - uses: codecov/codecov-action@v4.0.1  # publishing code coverage results
+        env:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: thomas-lehmann-private/Invoke-Tasks
         with:
           file: ./coverage.xml
           name: codecov on ${{ matrix.os }}
