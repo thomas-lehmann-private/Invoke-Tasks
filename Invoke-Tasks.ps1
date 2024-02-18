@@ -82,7 +82,7 @@ function Register-Task() {
 $uniqueTasks = $tasks | ForEach-Object { $_.Name} | Get-Unique
 if ($uniqueTasks.Count -ne $tasks.Count) {
     Write-Error ("At least one task has same name as another!")
-    return
+    Exit 1
 }
 
 if (-not $Quiet) {

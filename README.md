@@ -34,9 +34,9 @@ and filename.
 
 ## Dependencies
 
-For each Task you can specify exactly one dependeny by using the
+For each task you can specify exactly one dependency by using the
 name of the related task. With this you can change the order of
-the execution.
+the task execution.
 
 ```powershell
 Register-Task -Name "First Task" -DependsOn "Second Task" {
@@ -48,7 +48,7 @@ Register-Task -Name "Second Task" {
 }
 ```
 
-The output of the second tasks appeasr first.
+In this case the output of the second tasks appears first.
 
 ## Quiet
 
