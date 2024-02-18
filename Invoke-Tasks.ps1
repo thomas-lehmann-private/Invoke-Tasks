@@ -155,3 +155,7 @@ while (-not $errorFound) {
         break
     }
 }
+
+if ($errorFound) {
+    Exit 1
+}

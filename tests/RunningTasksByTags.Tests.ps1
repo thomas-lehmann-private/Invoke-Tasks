@@ -46,4 +46,16 @@ Describe "Running tasks by tags" {
         $taskData.Results | Should -BeExactly @('hello world (first)!')
         $taskData.Count | Should -Be 1
     }
+
+    It "Execute task with tag that does not exist" {
+        $taskData = @{Count = 0; Results = @()}
+        ./Invoke-Tasks.ps1 `
+            -TaskFile tests/taskfiles/MatchingTags.ps1 `
+            -Tags does-not-exist `
+            -TaskData $taskData `
+            -Quiet
+
+        $taskData.Results | Should -BeExactly @()
+        $taskData.Count | Should -Be 0
+    }
 }
