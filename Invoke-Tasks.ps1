@@ -36,6 +36,8 @@
 .PARAMETER Tags
     When specifying you can filter for tasks, all others will be adjusted to
     completed without being executed then.
+.PARAMETER CaptureRegexes
+    List of regexes in the format name=<regex>
 .PARAMETER Quiet
     Hide all output except errors and task output itself
 .NOTES
@@ -47,6 +49,7 @@ param (
     [String] $TaskFile = './tasks.ps1',
     [Hashtable] $TaskData = @{},
     [String[]] $Tags = @(),
+    [String[]] $CaptureRegexes = @(),
     [switch] $Quiet = $false
 )
 
@@ -88,11 +91,14 @@ if ($uniqueTasks.Count -ne $tasks.Count) {
 if (-not $Quiet) {
     Write-Message ("Running on OS {0}" -f $PSVersionTable.OS)
     Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
-    Write-Message ("  ... task data {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
+    Write-Message ("  ... task data: {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
+    Write-Message ("  ... capture regexes: {0}" -f $($CaptureRegexes -Join " , "))
     Write-Message ("  ... {0} tasks found in {1}" -f $tasks.Count, $ScriptFile)
 
     $tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
 }
+
+$capturedDetails = @()
 
 $errorFound = $false
 while (-not $errorFound) {
@@ -138,7 +144,20 @@ while (-not $errorFound) {
             $performance = Measure-Command {
                 Invoke-Command `
                     -ScriptBlock $task.ScriptBlock `
-                    -ArgumentList $TaskData | Out-Default
+                    -ArgumentList $TaskData `
+                    6>&1 `
+                    | Tee-Object -Variable output | Out-Default
+
+                # trying to capture output for defined regexes
+                foreach ($captureRegex in $CaptureRegexes) {
+                    $separatorPos = $captureRegex.IndexOf('=')
+                    $name = $captureRegex.SubString(0, $separatorPos)
+                    $regex = $captureRegex.SubString($separatorPos+1)
+                    $found = $($output | Select-String -Pattern $regex)
+                    if ($found) {
+                        $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
+                    }
+                }
             }
             if (-not $Quiet) {
                 Write-Message (" ... took {0} seconds!" -f $performance.TotalSeconds)
@@ -154,6 +173,12 @@ while (-not $errorFound) {
     if ($count -eq $tasks.Count) {
         break
     }
+}
+
+if ($capturedDetails.Count -gt 0) {
+    $capturedDetails `
+    | ConvertTo-Json `
+    | Set-Content -Path captured.json
 }
 
 if ($errorFound) {

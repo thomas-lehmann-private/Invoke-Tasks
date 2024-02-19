@@ -14,7 +14,7 @@ Register-Task -Name "Pester Tests" {
         }
         CodeCoverage = @{
             Enabled = $true
-            CoveragePercentTarget = 95
+            CoveragePercentTarget = 96
             Path = @('./Invoke-Tasks.ps1')
         }
         TestResult = @{

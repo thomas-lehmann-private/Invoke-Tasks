@@ -1,3 +1,5 @@
+![Build](https://github.com/thomas-lehmann-private/Invoke-Tasks/actions/workflows/invoke-tasks-build-actions.yaml/badge.svg)
+
 # Invoke-Tasks
 Powershell based task processing. You do not require another module.
 
@@ -60,3 +62,7 @@ you see errors and the output of the tasks itself only.
 You can specify multiple tags at each task.
 When specifying one of those tags with `Invoke-Tasks`
 only those tasks are executed that do match.
+
+## Links
+
+ - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-powershell
