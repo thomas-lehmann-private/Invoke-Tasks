@@ -25,7 +25,7 @@ jobs:
           gistID: 2279dcc04bff0c1ef7b8038821f23d2e
           filename: Invoke-Tasks.json
           label: Code Coverage
-          message: ${{ env.COVERAGE }}
+          message: ${{ env.COVERAGE }}%
           valColorRange: ${{ env.COVERAGE }}
           maxColorRange: 100
           minColorRange: 0
