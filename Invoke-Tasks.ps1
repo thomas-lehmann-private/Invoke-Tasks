@@ -21,7 +21,7 @@
 
 <#
 .SYNOPSIS
-    Running tasks.
+    Running Powershell tasks in order (default)
 .DESCRIPTION
     Running tasks in order of appearence but also recognize dependencies
     to ensure that those tasks run first. If you throw an exception
@@ -29,7 +29,7 @@
     choosen.
 .PARAMETER TaskFile
     The default is tasks.ps1 in current folder but you also can
-    define another one.
+    define another path and filename.
 .PARAMETER TaskData
     Possibility to give parameters to the tasks (default is empty hashtable)
     The data can be modified by the tasks
@@ -38,6 +38,7 @@
     completed without being executed then.
 .PARAMETER CaptureRegexes
     List of regexes in the format name=<regex>
+    Matching text in task outputs will be written to a 'captured.json' after processing.
 .PARAMETER Quiet
     Hide all output except errors and task output itself
 .NOTES
@@ -53,12 +54,15 @@ param (
     [switch] $Quiet = $false
 )
 
+# all registered tasks
 $global:tasks = @()
+
 
 function Write-Message() {
     param([String] $Message)
     Write-Information "Invoke-Tasks :: $Message" -InformationAction Continue
 }
+
 
 function Register-Task() {
     param (

@@ -11,6 +11,21 @@ jobs:
     name: Build on ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2            # checks out of repository and download it to the runner
-      - run: pwsh -file ./Invoke-Tasks.ps1
-
+      - uses: actions/checkout@v2
+      - run: run the build tasks
+        run: pwsh -file ./Invoke-Tasks.ps1 -CaptureRegexes "coverage=Covered (\d+)"
+      - name: get coverage value and write it into environment variable
+        run: |
+          coverage = $(pwsh -Command "$(Get-Content captured.json|ConvertFrom-JSON).coverage")
+          echo "COVERAGE=$coverage" >> $GITHUB_ENV
+      - name: prepare coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 2279dcc04bff0c1ef7b8038821f23d2e
+          filename: Invoke-Tasks.json
+          label: Code Coverage
+          message: ${{ env.COVERAGE }}
+          valColorRange: ${{ env.COVERAGE }}
+          maxColorRange: 100
+          minColorRange: 0

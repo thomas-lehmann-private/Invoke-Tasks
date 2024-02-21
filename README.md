@@ -34,7 +34,7 @@ Invoke-Task does look for a **tasks.ps1** in current working directory.
 You also can use `Invoke-Tasks -TaskFile demo.ps1` for specifying another path
 and filename.
 
-## Dependencies
+## Tasks with dependencies
 
 For each task you can specify exactly one dependency by using the
 name of the related task. With this you can change the order of
@@ -50,18 +50,55 @@ Register-Task -Name "Second Task" {
 }
 ```
 
-In this case the output of the second tasks appears first.
+In this case the output of the second task appears before the output of the first task.
 
 ## Quiet
 
-You can specify `-Quiet` when using `Invoke-Tasks` then
-you see errors and the output of the tasks itself only.
+You can specify `-Quiet` when using `Invoke-Tasks` then you see errors and the output of
+the tasks itself only.
 
 ## Tags
 
 You can specify multiple tags at each task.
 When specifying one of those tags with `Invoke-Tasks`
 only those tasks are executed that do match.
+
+```powershell
+Register-Task -Name "First Task" -Tags first {
+    Write-Host "First Task"
+}
+
+Register-Task -Name "Second Task" -Tags second {
+    Write-Host "Second Task"
+}
+```
+
+With `Invoke-Tasks -Tags second` second task will be processed only.
+
+## Capturing via regex
+
+Main reason for introducing this was to capture information required for the build
+process. In concrete scenario I intended to get the code coverage percentage for
+a badge. When your tasks output does print somewhere `Covered 96,67%` you can execute
+all with:
+
+```powershell
+Invoke-Tasks -CaptureRegexes "coverage=Covered (\d+)" 
+```
+
+A `captured.json` does look then like following:
+
+```json
+{
+  "coverage": "96"
+}
+```
+
+With following command you simply get the value in your build process:
+
+```powershell
+pwsh -Command "$(Get-Content captured.json|ConvertFrom-JSON).coverage"
+```
 
 ## Links
 
