@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: run the build tasks
+      - name: run the build tasks
         run: pwsh -file ./Invoke-Tasks.ps1 -CaptureRegexes "coverage=Covered (\d+)"
       - name: get coverage value and write it into environment variable
         run: |
