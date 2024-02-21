@@ -16,7 +16,7 @@ jobs:
         run: pwsh -file ./Invoke-Tasks.ps1 -CaptureRegexes "coverage=Covered (\d+)"
       - name: get coverage value and write it into environment variable
         run: |
-          coverage = $(pwsh -Command "$(Get-Content captured.json|ConvertFrom-JSON).coverage")
+          coverage=$(pwsh -Command "(Get-Content captured.json | ConvertFrom-Json).coverage")
           echo "COVERAGE=$coverage" >> $GITHUB_ENV
       - name: prepare coverage badge
         uses: schneegans/dynamic-badges-action@v1.7.0
