@@ -103,3 +103,5 @@ pwsh -Command "$(Get-Content captured.json|ConvertFrom-JSON).coverage"
 ## Links
 
  - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-powershell
+ - https://github.com/marketplace/actions/dynamic-badges
+
