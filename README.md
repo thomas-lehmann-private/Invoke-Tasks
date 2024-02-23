@@ -1,4 +1,4 @@
-![Build](https://github.com/thomas-lehmann-private/Invoke-Tasks/actions/workflows/invoke-tasks-build-actions.yaml/badge.svg) ![CoverageVadge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Nachtfeuer/2279dcc04bff0c1ef7b8038821f23d2e/raw/Invoke-Tasks.json)
+![Build](https://github.com/thomas-lehmann-private/Invoke-Tasks/actions/workflows/invoke-tasks-build-actions.yaml/badge.svg) ![CoverageVadge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Nachtfeuer/2279dcc04bff0c1ef7b8038821f23d2e/raw/Invoke-Tasks.json) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Invoke-Tasks
 Powershell based task processing. You do not require another module.
@@ -33,6 +33,60 @@ Invoke-Tasks ::  ... took 0,0088361 seconds!
 Invoke-Task does look for a **tasks.ps1** in current working directory.
 You also can use `Invoke-Tasks -TaskFile demo.ps1` for specifying another path
 and filename.
+
+## Documentation
+
+```
+NAME
+    Invoke-Tasks.ps1
+    
+SYNOPSIS
+    Running Powershell tasks in order (default)
+
+
+SYNTAX
+    Invoke-Tasks.ps1 [[-TaskFile] <String>] [[-TaskData] <Hashtable>] [[-Tags] <String[]>] [[-CaptureRegexes] 
+    <String[]>] [-Quiet] [<CommonParameters>]
+
+
+DESCRIPTION
+    Running tasks in order of appearence but also recognize dependencies
+    to ensure that those tasks run first. If you throw an exception
+    the task processing is stopped with the error printed you have
+    choosen.
+
+
+PARAMETERS
+    -TaskFile <String>
+        The default is tasks.ps1 in current folder but you also can
+        define another path and filename.
+
+    -TaskData <Hashtable>
+        Possibility to give parameters to the tasks (default is empty hashtable)
+        The data can be modified by the tasks
+
+    -Tags <String[]>
+        When specifying you can filter for tasks, all others will be adjusted to
+        completed without being executed then.
+
+    -CaptureRegexes <String[]>
+        List of regexes in the format name=<regex>
+        Matching text in task outputs will be written to a 'captured.json' after processing.
+
+    -Quiet [<SwitchParameter>]
+        Hide all output except errors and task output itself
+
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+REMARKS
+    To see the examples, type: "Get-Help Invoke-Tasks.ps1 -Examples"
+    For more information, type: "Get-Help Invoke-Tasks.ps1 -Detailed"
+    For technical information, type: "Get-Help Invoke-Tasks.ps1 -Full"
+```
 
 ## Tasks with dependencies
 
