@@ -3,6 +3,17 @@
 # Invoke-Tasks
 Powershell based task processing. You do not require another module.
 
+## Feature summary
+
+ - Running tasks in given order
+ - Each task can have one dependency that runs first
+ - Capturing multiple output by defining named regexes written into a `captured.json`
+ - Tasks can be tagged allowing to filter for tasks
+ - Tasks can be skipped
+ - Tools output can be hidden
+ - Task data (hashtable) can be shared accross all tasks
+ - Performance output for each individual task
+
 ## Quickstart
 
 Simply define a **tasks.ps1** with following content:
