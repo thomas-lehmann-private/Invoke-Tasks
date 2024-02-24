@@ -23,11 +23,11 @@ Describe "Running tasks by tags" {
         $taskData.Count | Should -Be 1
     }
 
-    It "Execute task with tag 'first' and 'second'" {
+    It "Execute task with tag 'Simple' and 'Short'" {
         $taskData = @{Count = 0; Results = @()}
         ./Invoke-Tasks.ps1 `
             -TaskFile tests/taskfiles/MatchingTags.ps1 `
-            -Tags first, second `
+            -Tags Simple, Short `
             -TaskData $taskData `
             -Quiet
 
@@ -35,7 +35,7 @@ Describe "Running tasks by tags" {
         $taskData.Count | Should -Be 2
     }
 
-    It "Execute task with tag 'first' only with dependency" {
+    It "Execute task with tag 'first' with dependency" {
         $taskData = @{Count = 0; Results = @()}
         ./Invoke-Tasks.ps1 `
             -TaskFile tests/taskfiles/MatchingTagsWithDependency.ps1 `
@@ -43,8 +43,8 @@ Describe "Running tasks by tags" {
             -TaskData $taskData `
             -Quiet
 
-        $taskData.Results | Should -BeExactly @('hello world (first)!')
-        $taskData.Count | Should -Be 1
+        $taskData.Results | Should -BeExactly @('hello world (second)!', 'hello world (first)!')
+        $taskData.Count | Should -Be 2
     }
 
     It "Execute task with tag that does not exist" {

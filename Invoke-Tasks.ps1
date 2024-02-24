@@ -54,16 +54,43 @@ param (
     [switch] $Quiet = $false
 )
 
-# all registered tasks
+
+# all globally registered tasks
 $global:tasks = @()
 
 
+<#
+    .SYNOPSIS
+    writing a message to console
+
+    .PARAMETER Message
+    the message to print to console.
+#>
 function Write-Message() {
     param([String] $Message)
     Write-Information "Invoke-Tasks :: $Message" -InformationAction Continue
 }
 
 
+<#
+    .SYNOPSIS
+    register a task for execution (defined in the user script)
+
+    .PARAMETER Name
+    name (title) of the task
+
+    .PARAMETER ScriptBlock
+    the task script code that should be executed
+
+    .PARAMETER Tags
+    optional list of tags that can be defined to filter tasks on demand
+
+    .PARAMETER DependOn
+    optional name of a task that must exist to be executed bevor given one
+
+    .PARAMETER Skip
+    optional skipping of given task (default: false)
+#>
 function Register-Task() {
     param (
         [String] $Name,
@@ -83,108 +110,214 @@ function Register-Task() {
     }
 }
 
-# ensure that all tasks are registered
-. $TaskFile
 
-$uniqueTasks = $tasks | ForEach-Object { $_.Name} | Get-Unique
-if ($uniqueTasks.Count -ne $tasks.Count) {
-    Write-Error ("At least one task has same name as another!")
-    Exit 1
+function Search-Output() {
+    param (
+        [String] $Output,
+        [String[]] $CaptureRegexes = @()
+    )
+
+    $capturedDetails = @()
+
+    # trying to capture output for defined regexes
+    foreach ($captureRegex in $CaptureRegexes) {
+        $separatorPos = $captureRegex.IndexOf('=')
+        $name = $captureRegex.SubString(0, $separatorPos)
+        $regex = $captureRegex.SubString($separatorPos+1)
+        $found = $($Output | Select-String -Pattern $regex)
+        if ($found) {
+            $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
+        }
+    }
+
+    return $capturedDetails
 }
 
-if (-not $Quiet) {
-    Write-Message ("Running on OS {0}" -f $PSVersionTable.OS)
-    Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
-    Write-Message ("  ... task data: {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
-    Write-Message ("  ... capture regexes: {0}" -f $($CaptureRegexes -Join " , "))
-    Write-Message ("  ... {0} tasks found in {1}" -f $tasks.Count, $ScriptFile)
 
-    $tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
-}
+function Test-AllTag() {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName',
+    Justification = 'False positive as rule does not know that Where-Object operates within the same scope')]
+    param(
+        [String] $TaskName,
+        [String[]] $Tags
+    )
 
-$capturedDetails = @()
-
-$errorFound = $false
-while (-not $errorFound) {
+    $task = $global:tasks | Where-Object { $_.Name -eq $TaskName }
     $count = 0
-    foreach ($task in $global:tasks) {
-        if ($task.Skip -or $task.Completed) {
+
+    foreach ($tag in $Tags) {
+        if ($task.Tags -contains $tag) {
             $count += 1
-            continue
         }
+    }
 
-        if ($Tags.Count -gt 0) {
-            $foundTag = $false
-            foreach ($tag in $Tags) {
-                if ($Task.Tags -contains $tag) {
-                    $foundTag = $true
-                    break
-                }
-            }
+    return $count -eq $Tags.Count
+}
 
-            if (-not $foundTag) {
-                $task.Completed = $true
-                continue
-            }
-        }
 
-        if ($task.DependsOn) {
-            $dependencies = $global:tasks | Where-Object { $_.Name -eq $task.DependsOn }
-            if ($dependencies.Count -ne 1) {
-                Write-Error ("No such task as dependency: {0}" -f $task.DependsOn)
-                $errorFound = $true
-            }
+<#
+    .SYNOPSIS
+    Executing task by given name
 
-            if (-not $dependencies.Completed) {
-                continue
-            }
+    .DESCRIPTION
+    Executing task by given name executing the dependencies first
+
+    .PARAMETER Name
+    The name of the task
+
+    .PARAMETER TaskData
+    The possibility to share data accross all task.
+
+    .Parameter Depth
+    internally used parameter
+
+    .NOTES
+    The parameter 'privateContext' in $TaskData is reserved by this tool.
+#>
+function Invoke-Task() {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name',
+    Justification = 'False positive as rule does not know that Where-Object operates within the same scope')]
+    param(
+        [String] $Name,
+        [Hashtable] $TaskData,
+        [Int] $Depth = 0
+    )
+
+    if ($Depth -gt $global:tasks.Count) {
+        throw "Cyclic dependencies are not allowed!"
+    }
+
+    $task = $global:tasks | Where-Object { $_.Name -eq $Name }
+    if (-not $task) {
+        throw "Unknown task (or dependency)"
+    }
+
+    if ($task.DependsOn) {
+        Invoke-Task `
+            -Name $task.DependsOn `
+            -TaskData $TaskData `
+            -Depth $($Depth+1)
+    }
+
+    if ($TaskData.privateContext.checkMode) {
+        $task.Completed = $true
+        return
+    }
+
+    if (-not $Quiet) {
+        Write-Message ("Running task '{0}'" -f $task.Name)
+    }
+
+    try {
+        $performance = Measure-Command {
+            Invoke-Command `
+                -ScriptBlock $task.ScriptBlock `
+                -ArgumentList $TaskData `
+                6>&1 `
+                | Tee-Object -Variable output | Out-Default
+
+            # remember outputs
+            $TaskData.privateContext.capturedDetails `
+                += $(Search-Output $output $TaskData.privateContext.captureRegexes)
         }
 
         if (-not $Quiet) {
-            Write-Message ("Running task '{0}'" -f $task.Name)
+            Write-Message (" ... took {0} seconds!" -f $performance.TotalSeconds)
+        }
+
+        $task.Completed = $true
+    } catch {
+        Write-Error ("{0}" -f $_)
+        $TaskData.privateContext.errorFound = $true
+    }
+
+}
+
+
+function Invoke-AllTask() {
+    param(
+        [String] $TaskFile,
+        [Hashtable] $TaskData
+    )
+
+    # ensure that all tasks are registered
+    . $TaskFile
+
+    if ($TaskData.privateContext.checkMode) {
+        $uniqueTasks = $global:tasks | ForEach-Object { $_.Name} | Get-Unique
+        if ($uniqueTasks.Count -ne $tasks.Count) {
+            Write-Error ("At least one task has same name as another!")
+            $TaskData.privateContext.errorFound = $true
+            return
+        }
+    }
+
+    if ((-not $Quiet) -and (-not $TaskData.privateContext.checkMode)) {
+        Write-Message ("Running on OS {0}" -f $PSVersionTable.OS)
+        Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
+        Write-Message ("  ... task data: {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
+        Write-Message ("  ... capture regexes: {0}" -f $($TaskData.privateContext.captureRegexes -Join " , "))
+        Write-Message ("  ... {0} tasks found in {1}" -f $tasks.Count, $TaskData.privateContext.scriptFile)
+
+        $global:tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
+    }
+
+    foreach ($task in $global:tasks) {
+        if ($task.Skip -or $task.Completed) {
+            continue
+        }
+
+        if (-not $(Test-AllTag $task.Name $TaskData.privateContext.tags)) {
+            $task.Completed = $true
+            continue
         }
 
         try {
-            $performance = Measure-Command {
-                Invoke-Command `
-                    -ScriptBlock $task.ScriptBlock `
-                    -ArgumentList $TaskData `
-                    6>&1 `
-                    | Tee-Object -Variable output | Out-Default
-
-                # trying to capture output for defined regexes
-                foreach ($captureRegex in $CaptureRegexes) {
-                    $separatorPos = $captureRegex.IndexOf('=')
-                    $name = $captureRegex.SubString(0, $separatorPos)
-                    $regex = $captureRegex.SubString($separatorPos+1)
-                    $found = $($output | Select-String -Pattern $regex)
-                    if ($found) {
-                        $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
-                    }
-                }
-            }
-            if (-not $Quiet) {
-                Write-Message (" ... took {0} seconds!" -f $performance.TotalSeconds)
-            }
+            Invoke-Task -Name $task.Name -TaskData $TaskData
         } catch {
             Write-Error ("{0}" -f $_)
-            $errorFound = $true
+            $TaskData.privateContext.errorFound = $true
         }
-        $task.Completed = $true
-        $count += 1
-    }
 
-    if ($count -eq $tasks.Count) {
-        break
+        if ($TaskData.privateContext.errorFound) {
+            break
+        }
     }
 }
 
-if ($capturedDetails.Count -gt 0) {
-    $capturedDetails `
-    | ConvertTo-Json `
-    | Set-Content -Path captured.json
+
+# private Invoke-Task context
+$privateContext = @{
+    errorFound = $false
+    tags = $Tags
+    quiet = $Quiet
+    captureRegexes = $CaptureRegexes
+    capturedDetails = @()
+    checkMode = $false
 }
 
-if ($errorFound) {
+# the reserved attribute required for whole task processing
+$TaskData.privateContext = $privateContext
+
+# checking the tasks
+$privateContext.checkMode = $true
+Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+
+if (-not $TaskData.privateContext.errorFound) {
+    # reset tasks
+    $global:tasks = @()
+    # running the tasks
+    $privateContext.checkMode = $false
+    Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+}
+
+# writing captured output to json file
+if ($TaskData.privateContext.capturedDetails.Count -gt 0) {
+    $TaskData.privateContext.capturedDetails `
+        | ConvertTo-Json `
+        | Set-Content -Path captured.json
+}
+
+if ($TaskData.privateContext.errorFound) {
     Exit 1
 }
