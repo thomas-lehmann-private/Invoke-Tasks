@@ -5,6 +5,7 @@ Powershell based task processing. You do not require another module.
 
 ## Feature summary
 
+ - Pure Powershell with a single script and no module/assembly dependency
  - Running tasks in given order
  - Each task can have one dependency that runs first
  - Capturing multiple output by defining named regexes written into a `captured.json`
@@ -19,7 +20,7 @@ Powershell based task processing. You do not require another module.
 Simply define a **tasks.ps1** with following content:
 
 ```powershell
-Register-Task -Name "Demo" {
+Register-Task -Name "Hello world!" {
     Write-Host 'hello world!'
 }
 ```
@@ -139,6 +140,10 @@ Register-Task -Name "Second Task" -Tags second {
 ```
 
 With `Invoke-Tasks -Tags second` second task will be processed only.
+
+**Please note**: If you have specified a matching task with a task
+as dependency that don't match then those task is executed too because
+a dependency has higher priority.
 
 ## Capturing via regex
 

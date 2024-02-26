@@ -111,6 +111,16 @@ function Register-Task() {
 }
 
 
+<#
+    .SYNOPSIS
+    searching output by list of named regexes
+
+    .PARAMETER Output
+    The captured output
+
+    .PARAMETER CapturedRegexes
+    The list of named regexes
+#>
 function Search-Output() {
     param (
         [String] $Output,
@@ -134,6 +144,16 @@ function Search-Output() {
 }
 
 
+<#
+    .SYNOPSIS
+    Verify that all tags specified on Invoke-Tasks (command line) do match
+
+    .PARAMETER TaskName
+    The description of a parameter
+
+    .PARAMETER Tags
+    Those tags specified on Invoke-Tasks (command line)
+#>
 function Test-AllTag() {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName',
     Justification = 'False positive as rule does not know that Where-Object operates within the same scope')]
@@ -234,6 +254,13 @@ function Invoke-Task() {
 }
 
 
+<#
+    .SYNOPSIS
+    Main logic for running all tasks
+
+    .PARAMETER TaskFile
+    the specified file with the user specific tasks
+#>
 function Invoke-AllTask() {
     param(
         [String] $TaskFile,
