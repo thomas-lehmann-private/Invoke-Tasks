@@ -50,16 +50,15 @@ and filename.
 
 ```
 NAME
-    Invoke-Tasks.ps1
-    
+    /Users/thomaslehmann/Documents/Programmierung/Invoke-Tasks/Invoke-Tasks.ps1
+
 SYNOPSIS
     Running Powershell tasks in order (default)
 
 
 SYNTAX
-    Invoke-Tasks.ps1 [[-TaskFile] <String>] [[-TaskData] <Hashtable>] [[-Tags] <String[]>] [[-CaptureRegexes] 
-    <String[]>] [-Quiet] [<CommonParameters>]
-
+    /Users/thomaslehmann/Documents/Programmierung/Invoke-Tasks/Invoke-Tasks.ps1 [[-TaskFile] <String>] [[-TaskData] <Hashtable>] [[-Tags] <String[]>] [[-CaptureRegexes] <String[]>] 
+    [[-TaskLibraryFile] <String>] [-Quiet] [<CommonParameters>]
 
 DESCRIPTION
     Running tasks in order of appearence but also recognize dependencies
@@ -85,6 +84,8 @@ PARAMETERS
         List of regexes in the format name=<regex>
         Matching text in task outputs will be written to a 'captured.json' after processing.
 
+    -TaskLibraryFile <String>
+
     -Quiet [<SwitchParameter>]
         Hide all output except errors and task output itself
 
@@ -95,9 +96,9 @@ PARAMETERS
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 REMARKS
-    To see the examples, type: "Get-Help Invoke-Tasks.ps1 -Examples"
-    For more information, type: "Get-Help Invoke-Tasks.ps1 -Detailed"
-    For technical information, type: "Get-Help Invoke-Tasks.ps1 -Full"
+    To see the examples, type: "Get-Help /Users/thomaslehmann/Documents/Programmierung/Invoke-Tasks/Invoke-Tasks.ps1 -Examples"
+    For more information, type: "Get-Help /Users/thomaslehmann/Documents/Programmierung/Invoke-Tasks/Invoke-Tasks.ps1 -Detailed"
+    For technical information, type: "Get-Help /Users/thomaslehmann/Documents/Programmierung/Invoke-Tasks/Invoke-Tasks.ps1 -Full"
 ```
 
 ## Tasks with dependencies
@@ -169,6 +170,41 @@ With following command you simply get the value in your build process:
 ```powershell
 pwsh -Command "$(Get-Content captured.json|ConvertFrom-JSON).coverage"
 ```
+
+## Library Tasks
+
+It's possible to reuse tasks keeping those task in a library file.
+The library file has same syntax using the `Register-Task` mechanism.
+
+**Example for library**:
+
+```powershell
+Register-Task -Name "Say Message" {
+    param ([hashtable] $TaskData)
+    Write-Message $TaskData.Parameters.Message
+}
+```
+
+**Configuration on commandline**:
+
+```powershell
+Invoke-Tasks -TaskLibraryFile ./task-library.ps1
+```
+
+Using this task you can do it like following:
+
+```powershell
+Use-Task -Name "My Say Message 1" -LibraryTaskName "SayMessage" {
+    param ([hashtable] $TaskData)
+    $TaskData.Parameters.Message = "hello world!"
+}
+```
+
+It's a contract that `$TaskData.Parameters` is required to be configured as the library
+task has defined. In this scenarion the field `Message` is used. The process is simply
+that the codeblock of the `Use-Task` is executed first and then the depedencies (reverse order).
+Currently it is not implemented to use tags and dependencies on `Use-Task`
+
 
 ## Links
 

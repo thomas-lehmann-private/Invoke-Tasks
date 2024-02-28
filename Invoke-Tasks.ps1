@@ -51,9 +51,12 @@ param (
     [Hashtable] $TaskData = @{},
     [String[]] $Tags = @(),
     [String[]] $CaptureRegexes = @(),
+    [String] $TaskLibraryFile = "",
     [switch] $Quiet = $false
 )
 
+# all globally registered library tasks
+$global:libraryTasks = @()
 
 # all globally registered tasks
 $global:tasks = @()
@@ -107,6 +110,68 @@ function Register-Task() {
         DependsOn = $DependsOn
         Skip = $Skip
         Completed = $false
+    }
+}
+
+
+<#
+    .SYNOPSIS
+    Function called by the user to register a task with input for a library task
+
+    .DESCRIPTION
+    In the script block you can define parameters that will be evaluated by
+    the library task.
+
+    .PARAMETER Name
+    Unique name of the task
+
+    .PARAMETER LibraryTaskName
+    Unique name of the library task
+
+    .PARAMETER ScriptBlock
+    The scriptblock to be used to define parameters before the library task is executed.
+#>
+function Use-Task() {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ScriptBlock',
+    Justification = 'False positive as rule does not know that the newly created scriptblock operates within the same scope')]
+    param (
+        [String] $Name,
+        [String] $LibraryTaskName,
+        [scriptblock] $ScriptBlock
+    )
+
+    $libraryTask = $global:libraryTasks | Where-Object { $_.Name -eq $LibraryTaskName }
+    if ($libraryTask) {
+        $dependencies = @($libraryTask)
+
+        # fetching all dependencies
+        $dependency = $libraryTask
+        while ($dependency.DependsOn) {
+            $name = $dependency.DependsOn
+            $dependency = $global:libraryTasks | Where-Object { $_.Name -eq $name }
+            if (-not $dependency) {
+                throw ("Unknown dependency for library task {0}" -f $name)
+            }
+            $dependencies += $dependency
+        }
+
+        $global:tasks += [PSCustomObject]@{
+            Name = $Name
+            ScriptBlock = {
+                param([hashtable] $TaskData)
+                & $ScriptBlock $TaskData
+                # running all dependencies
+                foreach ($dependency in $dependencies) {
+                    & $dependency.ScriptBlock $TaskData
+                }
+            }.GetNewClosure()
+            Tags = $libraryTask.Tags
+            DependsOn = $null
+            Skip = $libraryTask.Skip
+            Completed = $false
+        }
+    } else {
+        throw ("Unknown library task {0}" -f $LibraryTaskName)
     }
 }
 
@@ -230,9 +295,9 @@ function Invoke-Task() {
 
     try {
         $performance = Measure-Command {
-            Invoke-Command `
-                -ScriptBlock $task.ScriptBlock `
-                -ArgumentList $TaskData `
+            & `
+                $task.ScriptBlock `
+                $TaskData `
                 6>&1 `
                 | Tee-Object -Variable output | Out-Default
 
@@ -250,7 +315,6 @@ function Invoke-Task() {
         Write-Error ("{0}" -f $_)
         $TaskData.privateContext.errorFound = $true
     }
-
 }
 
 
@@ -313,6 +377,30 @@ function Invoke-AllTask() {
 }
 
 
+<#
+    .SYNOPSIS
+    Loading the library when given
+
+    .PARAMETER TaskLibraryFile
+    Path and filename of library file
+
+    .PARAMETER TaskData
+    Required for error handling
+#>
+function Initialize-Library() {
+    param([String] $TaskLibraryFile)
+
+    if ($TaskLibraryFile) {
+        . $TaskLibraryFile
+
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '$global:libraryTasks',
+        Justification = 'False positive as rule does not know that it is used via function Use-Task')]
+        $global:libraryTasks = $global:tasks
+        $global:tasks = @()
+    }
+}
+
+
 # private Invoke-Task context
 $privateContext = @{
     errorFound = $false
@@ -325,10 +413,18 @@ $privateContext = @{
 
 # the reserved attribute required for whole task processing
 $TaskData.privateContext = $privateContext
+$TaskData.Parameters = @{}
 
-# checking the tasks
-$privateContext.checkMode = $true
-Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+# Trying to load library (when given)
+Initialize-Library -TaskLibraryFile $TaskLibraryFile -TaskData $TaskData
+
+try {
+    # checking the tasks
+    $privateContext.checkMode = $true
+    Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+} catch {
+    $TaskData.privateContext.errorFound = $true
+}
 
 if (-not $TaskData.privateContext.errorFound) {
     # reset tasks
