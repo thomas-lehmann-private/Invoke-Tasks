@@ -39,6 +39,8 @@
 .PARAMETER CaptureRegexes
     List of regexes in the format name=<regex>
     Matching text in task outputs will be written to a 'captured.json' after processing.
+.PARAMETER TaskLibraryFile
+    Path with a Powershell script that does provide reusable tasks.
 .PARAMETER Quiet
     Hide all output except errors and task output itself
 .NOTES
@@ -323,7 +325,10 @@ function Invoke-Task() {
     Main logic for running all tasks
 
     .PARAMETER TaskFile
-    the specified file with the user specific tasks
+    The specified file with the user specific tasks
+
+    .PARAMETER TaskData
+    Sharing this hashtable accross all tasks
 #>
 function Invoke-AllTask() {
     param(
@@ -401,6 +406,42 @@ function Initialize-Library() {
 }
 
 
+<#
+    .SYNOPSIS
+    Testing for existing of file and for valid code
+
+    .PARAMETER Path
+    path and name of script file
+
+    .PARAMETER AllowedFunctions
+    names of the allowed functions to be called
+#>
+function Test-Script() {
+    param(
+        [String] $Path,
+        [String[]] $AllowedFunctions
+    )
+
+    if (Test-Path -Path $Path) {
+        $fileContent = Get-Content $Path -Raw
+        # parsing script
+        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput(
+            $fileContent, [ref]$null, [ref]$null)
+
+        foreach ($statement in $scriptAst.EndBlock.Statements) {
+            $name = $($statement -Split " ")[0]
+            if ($name) {
+                if ($name -notin $AllowedFunctions) {
+                    throw "line {0}: {1} allowed only" -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
+                }
+            }
+        }
+    } else {
+        throw "Script {0} not found!" -f $Path
+    }
+}
+
+
 # private Invoke-Task context
 $privateContext = @{
     errorFound = $false
@@ -419,10 +460,12 @@ $TaskData.Parameters = @{}
 Initialize-Library -TaskLibraryFile $TaskLibraryFile -TaskData $TaskData
 
 try {
+    Test-Script -Path $TaskFile -AllowedFunctions "Register-Task", "Use-Task"
     # checking the tasks
     $privateContext.checkMode = $true
     Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
 } catch {
+    Write-Error ("{0}" -f $_)
     $TaskData.privateContext.errorFound = $true
 }
 
