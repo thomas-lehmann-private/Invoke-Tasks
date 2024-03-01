@@ -24,6 +24,9 @@ Register-Task -Name "Pester Tests" {
         Output = @{
             Verbosity = 'Detailed'
         }
+        Filter = @{
+            Tag = @()
+        }
     }
 
     $configuration = New-PesterConfiguration -Hashtable $options

@@ -210,4 +210,5 @@ Currently it is not implemented to use tags and dependencies on `Use-Task`
 
  - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-powershell
  - https://github.com/marketplace/actions/dynamic-badges
+ - https://pester.dev/docs/commands/New-PesterConfiguration
 

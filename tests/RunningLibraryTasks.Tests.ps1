@@ -1,9 +1,9 @@
 Describe "Running library tasks" {
-    It "Running tasks including dependencies inside library" {
+    It "Running tasks including dependencies inside library" -Tag library {
         $taskData = @{Count = 0; Results = @()}
         ./Invoke-Tasks.ps1 `
             -TaskFile tests/taskfiles/UsingLibraryTasks.ps1 `
-            -TaskLibraryFile tests/taskfiles/TaskLibrary.ps1 `
+            -TaskLibraryPath tests/taskfiles/TaskLibrary.ps1 `
             -TaskData $taskData `
             -Quiet
 
@@ -11,11 +11,11 @@ Describe "Running library tasks" {
         $taskData.Count | Should -Be 3
     }
 
-    It "Missing dependency inside library" {
+    It "Missing dependency inside library" -Tag library {
         $taskData = @{Count = 0; Results = @()}
         ./Invoke-Tasks.ps1 `
             -TaskFile tests/taskfiles/UsingLibraryTasks.ps1 `
-            -TaskLibraryFile tests/taskfiles/TaskLibraryWithMissingDependency.ps1 `
+            -TaskLibraryPath tests/taskfiles/TaskLibraryWithMissingDependency.ps1 `
             -TaskData $taskData `
             -Quiet
 
@@ -24,11 +24,35 @@ Describe "Running library tasks" {
         $taskData.Count | Should -Be 0
     }
 
-    It "Unknown library task" {
-        # TODO: funktioniert nicht wie gewünscht!
+    It "Unknown library task" -Tag library {
         $taskData = @{Count = 0; Results = @()}
         ./Invoke-Tasks.ps1 `
             -TaskFile tests/taskfiles/UnknownLibraryTasks.ps1 `
+            -TaskData $taskData `
+            -Quiet
+
+        $LASTEXITCODE | Should -Be 1
+        $taskData.Results | Should -BeExactly @()
+        $taskData.Count | Should -Be 0
+    }
+
+    It "Loading multiple task libraries from path" {
+        $taskData = @{Count = 0; Results = @()}
+        ./Invoke-Tasks.ps1 `
+            -TaskFile tests/taskfiles/UsingLibraryTasks.ps1 `
+            -TaskLibraryPath tests/taskfiles/library `
+            -TaskData $taskData `
+            -Quiet
+
+        $taskData.Results | Should -BeExactly @('hello world!', 'another hello world 2!')
+        $taskData.Count | Should -Be 2
+    }
+
+    It "Bad Library Path" {
+        $taskData = @{Count = 0; Results = @()}
+        ./Invoke-Tasks.ps1 `
+            -TaskFile tests/taskfiles/UsingLibraryTasks.ps1 `
+            -TaskLibraryPath tests/taskfiles/bad-library `
             -TaskData $taskData `
             -Quiet
 

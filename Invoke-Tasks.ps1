@@ -39,8 +39,9 @@
 .PARAMETER CaptureRegexes
     List of regexes in the format name=<regex>
     Matching text in task outputs will be written to a 'captured.json' after processing.
-.PARAMETER TaskLibraryFile
+.PARAMETER TaskLibraryPath
     Path with a Powershell script that does provide reusable tasks.
+    Can also be a folder with scripts.
 .PARAMETER Quiet
     Hide all output except errors and task output itself
 .NOTES
@@ -53,7 +54,7 @@ param (
     [Hashtable] $TaskData = @{},
     [String[]] $Tags = @(),
     [String[]] $CaptureRegexes = @(),
-    [String] $TaskLibraryFile = "",
+    [String] $TaskLibraryPath = "",
     [switch] $Quiet = $false
 )
 
@@ -393,10 +394,26 @@ function Invoke-AllTask() {
     Required for error handling
 #>
 function Initialize-Library() {
-    param([String] $TaskLibraryFile)
+    param([String] $TaskLibraryPath)
 
-    if ($TaskLibraryFile) {
-        . $TaskLibraryFile
+    if ($TaskLibraryPath) {
+        # is a file?
+        if (Test-Path -Path $TaskLibraryPath -Type Leaf) {
+            Write-Message ("Loading Library File {0}" -f $TaskLibraryPath)
+            Test-Script -Path $TaskLibraryPath -AllowedFunctions "Register-Task"
+            . $TaskLibraryPath
+            Write-Message("  ... done.")
+        } else {
+            Write-Message ("Loading Library Files from Path {0}" -f $TaskLibraryPath)
+            # is a folder
+            $files = Get-ChildItem -Path $TaskLibraryPath -Filter *.ps1
+            foreach ($file in $files) {
+                Write-Message ("  ... loading Library File {0}" -f $TaskLibraryPath)
+                Test-Script -Path $file -AllowedFunctions "Register-Task"
+                . $file
+                Write-Message("   ...... done.")
+            }
+        }
 
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '$global:libraryTasks',
         Justification = 'False positive as rule does not know that it is used via function Use-Task')]
@@ -456,17 +473,24 @@ $privateContext = @{
 $TaskData.privateContext = $privateContext
 $TaskData.Parameters = @{}
 
-# Trying to load library (when given)
-Initialize-Library -TaskLibraryFile $TaskLibraryFile -TaskData $TaskData
-
 try {
-    Test-Script -Path $TaskFile -AllowedFunctions "Register-Task", "Use-Task"
-    # checking the tasks
-    $privateContext.checkMode = $true
-    Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+    # Trying to load library (when given)
+    Initialize-Library -TaskLibraryPath $TaskLibraryPath -TaskData $TaskData
 } catch {
     Write-Error ("{0}" -f $_)
     $TaskData.privateContext.errorFound = $true
+}
+
+if (-not $TaskData.privateContext.errorFound) {
+    try {
+        Test-Script -Path $TaskFile -AllowedFunctions "Register-Task", "Use-Task"
+        # checking the tasks
+        $privateContext.checkMode = $true
+        Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+    } catch {
+        Write-Error ("{0}" -f $_)
+        $TaskData.privateContext.errorFound = $true
+    }
 }
 
 if (-not $TaskData.privateContext.errorFound) {
