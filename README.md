@@ -1,4 +1,4 @@
-![Build](https://github.com/thomas-lehmann-private/Invoke-Tasks/actions/workflows/invoke-tasks-build-actions.yaml/badge.svg) ![CoverageVadge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Nachtfeuer/2279dcc04bff0c1ef7b8038821f23d2e/raw/Invoke-Tasks.json) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![documentation](https://img.shields.io/badge/documentation-ok-%2300ff00)](https://thomas-lehmann-private.github.io/Invoke-Tasks)
+![Build](https://github.com/thomas-lehmann-private/Invoke-Tasks/actions/workflows/invoke-tasks-build-actions.yaml/badge.svg) ![CoverageVadge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Nachtfeuer/2279dcc04bff0c1ef7b8038821f23d2e/raw/Invoke-Tasks.json) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/badge/documentation-ok-%2300ff00)](https://thomas-lehmann-private.github.io/Invoke-Tasks)
 
 # Invoke-Tasks
 Powershell based task processing. You do not require another module.
@@ -6,14 +6,14 @@ Powershell based task processing. You do not require another module.
 ## Feature summary
 
  - Pure Powershell with a single script and no module/assembly dependency
- - Running tasks in given order
+ - Running tasks in defined order
  - Each task can have one dependency that runs first
  - Capturing multiple output by defining named regexes written into a `captured.json`
  - Tasks can be tagged allowing to filter for tasks
  - Tasks can be skipped
  - It's possible to define task libraries (file as well as folder)
  - Scripts are checked to use API functions only.
- - Invoke-Task output can be hidden
+ - Invoke-Tasks output can be hidden
  - Task data (hashtable) can be shared accross all tasks
  - Performance output for each individual task
 

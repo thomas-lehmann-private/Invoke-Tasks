@@ -5,9 +5,11 @@ repo_url: 'https://github.com/thomas-lehmann-private/Invoke-Tasks'
 
 nav:
   - Home: index.md
+  - User Guide:
+    - task-registration.md
 
 theme:
-  name: flatly
+  name: material
 
 plugins:
   - search
@@ -22,3 +24,10 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.mark
   - pymdownx.magiclink
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
