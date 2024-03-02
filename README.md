@@ -11,7 +11,9 @@ Powershell based task processing. You do not require another module.
  - Capturing multiple output by defining named regexes written into a `captured.json`
  - Tasks can be tagged allowing to filter for tasks
  - Tasks can be skipped
- - Tools output can be hidden
+ - It's possible to define task libraries (file as well as folder)
+ - Scripts are checked to use API functions only.
+ - Invoke-Task output can be hidden
  - Task data (hashtable) can be shared accross all tasks
  - Performance output for each individual task
 

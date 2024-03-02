@@ -21,37 +21,13 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 #>
+Register-Task -Name "Static code analysis" -Tag "check-code" {
+    param ([hashtable] $TaskData)
 
-# Using library to run static code analysis for Invoke-Tasks.ps1
-Use-Task -Name "Static code analysis" -LibraryTaskName "Static code analysis" {
-    param([hashtable] $TaskData)
-    $TaskData.Parameters.Path = './Invoke-Tasks.ps1'
-}
-
-# Running unittest
-Register-Task -Name "Pester Tests" {
-    $options = @{
-        Run = @{
-            Throw = $true
-        }
-        CodeCoverage = @{
-            Enabled = $true
-            CoveragePercentTarget = 100
-            Path = @('./Invoke-Tasks.ps1')
-        }
-        TestResult = @{
-            Enabled = $true
-            OutputFormat = 'JUnitXml'
-        }
-        Output = @{
-            Verbosity = 'Detailed'
-        }
-        Filter = @{
-            Tag = @()
-        }
+    $path = $TaskData.Parameters.Path
+    $results = Invoke-ScriptAnalyzer $path
+    $results | Format-Table
+    if ($results.Count -gt 0) {
+        throw "ScriptAnalyzer has found issues!"
     }
-
-    $configuration = New-PesterConfiguration -Hashtable $options
-    Invoke-Pester -Configuration $configuration
-    #reportgenerator -reports:./coverage.xml -targetdir:html
 }

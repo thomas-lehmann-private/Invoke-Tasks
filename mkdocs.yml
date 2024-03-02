@@ -1,0 +1,24 @@
+site_name: Invoke-Tasks
+site_author: 'Thomas Lehmann <tlehmann@posteo.de>'
+site_url: 'https://thomas-lehmann-private.github.io/Invoke-Tasks/'
+repo_url: 'https://github.com/thomas-lehmann-private/Invoke-Tasks'
+
+nav:
+  - Home: index.md
+
+theme:
+  name: flatly
+
+plugins:
+  - search
+  - mermaid2
+  - autolinks
+
+markdown_extensions:
+  - mkdocs_graphviz
+  - admonition
+  - footnotes
+  - pymdownx.tilde
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.magiclink
