@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: python3 -m pip install mkdocs mkdocs-material mkdocs-graphviz pymdown-extensions mkdocs-mermaid2-plugin mkdocs-autolinks-plugin
 
-      - name: Generate Doocumentation Site
+      - name: Generate Documentation Site
         run: python3 -m mkdocs build
 
       - name: Deploy

@@ -88,6 +88,12 @@ $global:libraryTasks = @()
 # all globally registered tasks
 $global:tasks = @()
 
+# all globally registered initializion function for analyse tasks
+$global:initializeAnalyseTasks = $null
+
+# all globally registered analyse tasks
+$global:analyseTasks = @()
+
 <#
     .SYNOPSIS
     writing a message to console
@@ -142,6 +148,62 @@ function Register-Task() {
 
 <#
     .SYNOPSIS
+    Registration of a analyse task
+
+    .DESCRIPTION
+    Registration of a analyse task. Those will be executed in given order
+    before any other task will be executed.
+
+    .PARAMETER Name
+    Unique name of the analyse task
+
+    .PARAMETER ScriptBlock
+    The analyse code block
+
+    .PARAMETER Tags
+    Defined tags to allow
+#>
+function Register-AnalyseTask() {
+    param (
+        [String] $Name,
+        [scriptblock] $ScriptBlock,
+        [String[]] $Tags = @()
+    )
+
+    # same elements cannot be added twice
+    if (-not $($global:analyseTasks | Where-Object{ $_.Name -eq $Name})) {
+        $global:analyseTasks += [PSCustomObject] @{
+            Name = $Name
+            ScriptBlock = $ScriptBlock
+            Tags = $Tags
+        }
+    }
+}
+
+
+<#
+    .SYNOPSIS
+    Providing configuration as hashtable for specific language and related analyse tasks
+
+    .PARAMETER Language
+    Initialization for given language for analyze tasks depending on it
+
+    .PARAMETER ScriptBlock
+    Initialization Code providing hashtable with the configuration
+#>
+function Initialize-AnalyseTask() {
+    param([scriptblock] $ScriptBlock)
+
+    if ($null -ne $global:initializeAnalyseTasks) {
+        throw "Initialization for analyse tasks already registered!"
+    }
+
+    $global:initializeAnalyseTasks = $ScriptBlock
+}
+
+
+<#
+    .SYNOPSIS
     Function called by the user to register a task with input for a library task
 
     .DESCRIPTION
@@ -157,6 +219,8 @@ function Register-Task() {
     .PARAMETER ScriptBlock
     The scriptblock to be used to define parameters before the library task is executed.
 #>
+
+
 function Use-Task() {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ScriptBlock',
     Justification = 'False positive as rule does not know that the newly created scriptblock operates within the same scope')]
@@ -375,11 +439,30 @@ function Invoke-AllTask() {
     if ((-not $Quiet) -and (-not $TaskData.privateContext.checkMode)) {
         Write-Message ("Running on OS {0}" -f $PSVersionTable.OS)
         Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
-        Write-Message ("  ... task data: {0}" -f $($TaskData | ConvertTo-Json).replace("`n", ""))
-        Write-Message ("  ... capture regexes: {0}" -f $($TaskData.privateContext.captureRegexes -Join " , "))
-        Write-Message ("  ... {0} tasks found in {1}" -f $tasks.Count, $TaskData.privateContext.scriptFile)
+        Write-Message ("  ... capture regexes: {0}" `
+            -f $($TaskData.privateContext.captureRegexes -Join " , "))
+        Write-Message ("  ... {0} (normal) tasks found in {1}" `
+            -f $tasks.Count, $TaskData.privateContext.taskFile)
 
         $global:tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
+    }
+
+    if (($global:analyseTasks.Count -gt 0) -and (-not $TaskData.privateContext.checkMode)) {
+        if ($global:initializeAnalyseTasks) {
+            foreach ($analyseTask in $global:analyseTasks) {
+                if (-not $TaskData.analyseConfiguration) {
+                    & $global:initializeAnalyseTasks $TaskData
+                }
+
+                $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
+                foreach ($pathAndFileName in $fileNames) {
+                    $content = Get-Content $pathAndFileName -Raw
+                    $scriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput(`
+                        $content, [ref]$null, [ref]$null)
+                    & $analyseTask.ScriptBlock $TaskData $pathAndFileName $scriptBlockAst
+                }
+            }
+        }
     }
 
     foreach ($task in $global:tasks) {
@@ -410,8 +493,8 @@ function Invoke-AllTask() {
     .SYNOPSIS
     Loading the library when given
 
-    .PARAMETER TaskLibraryFile
-    Path and filename of library file
+    .PARAMETER TaskLibraryPath
+    Path and filename of library file or a folder with multiple files
 
     .PARAMETER TaskData
     Required for error handling
@@ -420,10 +503,12 @@ function Initialize-Library() {
     param([String] $TaskLibraryPath)
 
     if ($TaskLibraryPath) {
+        $allowedFunctions = @("Register-Task", 'Initialize-AnalyseTask', 'Register-AnalyseTask')
+
         # is a file?
         if (Test-Path -Path $TaskLibraryPath -Type Leaf) {
             Write-Message ("Loading Library File {0}" -f $TaskLibraryPath)
-            Test-Script -Path $TaskLibraryPath -AllowedFunctions "Register-Task"
+            Test-Script -Path $TaskLibraryPath -AllowedFunctions $allowedFunctions
             . $TaskLibraryPath
             Write-Message("  ... done.")
         } else {
@@ -432,7 +517,7 @@ function Initialize-Library() {
             $files = Get-ChildItem -Path $TaskLibraryPath -Filter *.ps1
             foreach ($file in $files) {
                 Write-Message ("  ... loading Library File {0}" -f $TaskLibraryPath)
-                Test-Script -Path $file -AllowedFunctions "Register-Task"
+                Test-Script -Path $file -AllowedFunctions $allowedFunctions
                 . $file
                 Write-Message("   ...... done.")
             }
@@ -472,7 +557,8 @@ function Test-Script() {
             $name = $($statement -Split " ")[0]
             if ($name) {
                 if ($name -notin $AllowedFunctions) {
-                    throw "line {0}: {1} allowed only" -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
+                    throw "line {0}: {1} allowed only" `
+                        -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
                 }
             }
         }
@@ -490,10 +576,13 @@ $privateContext = @{
     captureRegexes = $CaptureRegexes
     capturedDetails = @()
     checkMode = $false
+    taskFile = $TaskFile
 }
 
 # the reserved attribute required for whole task processing
 $TaskData.privateContext = $privateContext
+$TaskData.analyseConfiguration = $null
+$TaskData.analyseResults = @()
 $TaskData.Parameters = @{}
 
 try {
@@ -506,7 +595,11 @@ try {
 
 if (-not $TaskData.privateContext.errorFound) {
     try {
-        Test-Script -Path $TaskFile -AllowedFunctions "Register-Task", "Use-Task"
+        $allowedFunctions = @(`
+            'Register-Task', 'Use-Task', `
+            'Initialize-AnalyseTask', 'Register-AnalyseTask')
+
+        Test-Script -Path $TaskFile -AllowedFunctions $allowedFunctions
         # checking the tasks
         $privateContext.checkMode = $true
         Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
@@ -519,9 +612,15 @@ if (-not $TaskData.privateContext.errorFound) {
 if (-not $TaskData.privateContext.errorFound) {
     # reset tasks
     $global:tasks = @()
+    $global:initializeAnalyseTasks = $null
     # running the tasks
     $privateContext.checkMode = $false
     Invoke-AllTask -TaskFile $TaskFile -TaskData $TaskData
+}
+
+if ($TaskData.analyseResults.Count -gt 0) {
+    $TaskData.analyseResults | Format-Table
+    $TaskData.privateContext.errorFound = $true
 }
 
 # writing captured output to json file

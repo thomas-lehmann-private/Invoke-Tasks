@@ -21,6 +21,18 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 #>
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+            AcceptedSeverity = 'none'
+        }
+        'Analyze Line Length' = @{
+            MaximumLineLength = 100
+        }
+    }
+}
 
 # Using library to run static code analysis for Invoke-Tasks.ps1
 Use-Task -Name "Static code analysis" -LibraryTaskName "Static code analysis" {
@@ -42,9 +54,13 @@ Register-Task -Name "Pester Tests" {
         TestResult = @{
             Enabled = $true
             OutputFormat = 'JUnitXml'
+            TestSuiteName = 'Invoke-Tasks'
         }
         Output = @{
             Verbosity = 'Detailed'
+        }
+        Debug = @{
+            ShowNavigationMarkers = $false
         }
         Filter = @{
             Tag = @()
