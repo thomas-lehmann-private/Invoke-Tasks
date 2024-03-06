@@ -24,10 +24,13 @@
 Register-Task -Name "Static code analysis" -Tag "check-code" {
     param ([hashtable] $TaskData)
 
-    $path = $TaskData.Parameters.Path
-    $results = Invoke-ScriptAnalyzer $path
-    $results | Format-Table
-    if ($results.Count -gt 0) {
-        throw "ScriptAnalyzer has found issues!"
+    $paths = $TaskData.Parameters.Paths
+    foreach ($path in $paths) {
+        Write-Message ("Checking code for {0}" -f $path)
+        $results = Invoke-ScriptAnalyzer $path -Recurse
+        $results | Format-Table
+        if ($results.Count -gt 0) {
+            throw "ScriptAnalyzer has found issues!"
+        }
     }
 }

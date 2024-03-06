@@ -37,7 +37,7 @@ Initialize-AnalyseTask {
 # Using library to run static code analysis for Invoke-Tasks.ps1
 Use-Task -Name "Static code analysis" -LibraryTaskName "Static code analysis" {
     param([hashtable] $TaskData)
-    $TaskData.Parameters.Path = './Invoke-Tasks.ps1'
+    $TaskData.Parameters.Paths = @('./Invoke-Tasks.ps1')
 }
 
 # Running unittest
