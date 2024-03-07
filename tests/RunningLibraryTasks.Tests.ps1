@@ -7,7 +7,8 @@ Describe "Running library tasks" {
             -TaskData $taskData `
             -Quiet
 
-        $taskData.Results | Should -BeExactly @('hello world!', 'another hello world!', 'another hello world 2!')
+        $expected = @('hello world!', 'another hello world!', 'another hello world 2!')
+        $taskData.Results | Should -BeExactly $expected
         $taskData.Count | Should -Be 3
     }
 

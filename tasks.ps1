@@ -23,9 +23,14 @@
 #>
 Initialize-AnalyseTask {
     param ([hashtable] $TaskData)
+
+    $files = @('./Invoke-Tasks.ps1')
+    $files += Get-ChildItem -Path './library' -Filter *.ps1
+    $files += Get-ChildItem -Path './tests' -Filter *.ps1
+
     $TaskData.analyseConfiguration = @{
         Global = @{
-            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+            AnalyzePathAndFileNames = $files
         }
         AnalyzeLineLength = @{
             MaximumLineLength = 100

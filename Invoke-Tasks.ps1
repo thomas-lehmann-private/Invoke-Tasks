@@ -368,10 +368,7 @@ function Invoke-Task() {
     }
 
     if ($task.DependsOn) {
-        Invoke-Task `
-            -Name $task.DependsOn `
-            -TaskData $TaskData `
-            -Depth $($Depth+1)
+        Invoke-Task -Name $task.DependsOn -TaskData $TaskData -Depth $($Depth+1)
     }
 
     if ($TaskData.privateContext.checkMode) {
@@ -385,10 +382,7 @@ function Invoke-Task() {
 
     try {
         $performance = Measure-Command {
-            & `
-                $task.ScriptBlock `
-                $TaskData `
-                6>&1 `
+            & $task.ScriptBlock $TaskData 6>&1 `
                 | Tee-Object -Variable output | Out-Default
 
             # remember outputs
@@ -404,6 +398,36 @@ function Invoke-Task() {
     } catch {
         Write-Error ("{0}" -f $_)
         $TaskData.privateContext.errorFound = $true
+    }
+}
+
+
+<#
+    .SYNOPSIS
+    Running analyse tasks for each configured file
+
+    .PARAMETER TaskData
+    Required for configuration as well as results of a analyse task
+#>
+function Invoke-AllAnalyseTask() {
+    param([Hashtable] $TaskData)
+
+    if (($global:analyseTasks.Count -gt 0) -and (-not $TaskData.privateContext.checkMode)) {
+        if ($global:initializeAnalyseTasks) {
+            foreach ($analyseTask in $global:analyseTasks) {
+                if (-not $TaskData.analyseConfiguration) {
+                    & $global:initializeAnalyseTasks $TaskData
+                }
+
+                $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
+                foreach ($pathAndFileName in $fileNames) {
+                    $content = Get-Content $pathAndFileName -Raw
+                    $scriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput(`
+                        $content, [ref]$null, [ref]$null)
+                    & $analyseTask.ScriptBlock $TaskData $pathAndFileName $scriptBlockAst
+                }
+            }
+        }
     }
 }
 
@@ -441,29 +465,11 @@ function Invoke-AllTask() {
         Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
         Write-Message ("  ... capture regexes: {0}" `
             -f $($TaskData.privateContext.captureRegexes -Join " , "))
-        Write-Message ("  ... {0} (normal) tasks found in {1}" `
-            -f $tasks.Count, $TaskData.privateContext.taskFile)
 
         $global:tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
     }
 
-    if (($global:analyseTasks.Count -gt 0) -and (-not $TaskData.privateContext.checkMode)) {
-        if ($global:initializeAnalyseTasks) {
-            foreach ($analyseTask in $global:analyseTasks) {
-                if (-not $TaskData.analyseConfiguration) {
-                    & $global:initializeAnalyseTasks $TaskData
-                }
-
-                $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
-                foreach ($pathAndFileName in $fileNames) {
-                    $content = Get-Content $pathAndFileName -Raw
-                    $scriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput(`
-                        $content, [ref]$null, [ref]$null)
-                    & $analyseTask.ScriptBlock $TaskData $pathAndFileName $scriptBlockAst
-                }
-            }
-        }
-    }
+    Invoke-AllAnalyseTask -TaskData $TaskData
 
     foreach ($task in $global:tasks) {
         if ($task.Skip -or $task.Completed) {
