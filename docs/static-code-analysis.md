@@ -59,3 +59,20 @@ Initialize-AnalyseTask {
 }
 ```
 The severity is `information`.
+
+## Checking for function line count
+
+The default is 50. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        # other settings
+    }
+}
+```
+The severity is `warning`.

@@ -99,7 +99,7 @@ Register-AnalyseTask -Name "AnalyzeFunctionLineCount" {
     )
     # get configuration
     $maximumFunctionLineCount = if ($TaskData.analyseConfiguration.AnalyzeFunctionLineCount) {
-        $TaskData.analyseConfiguration.AnalyzeFunctionLinneCount.MaximumFunctionLineCount
+        $TaskData.analyseConfiguration.AnalyzeFunctionLineCount.MaximumFunctionLineCount
     } else {
         50
     }
