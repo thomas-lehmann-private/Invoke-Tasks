@@ -2,14 +2,7 @@
 
 ## Why?
 
-While writing AST functions can be challenging (but solvable) writing PSScriptAnalyzer rules
-didn't work for me. Also I did write the code exactly as defined in documentation
-(which is well documented) the using of the rules simply fails and I don't know
-why. That's why I considered to extent the `Invoke-Task` by a mechanism that is
-really simple to use and it works. Also in some cases I got false positives which
-are really annoying and with the static code analysis mechanism under control I can
-provide a mechanism that is more easier to handle (future updates).
-
+Short: I'm not happy with writing custom rules for the PSSCriptAnalyzer.
 
 ## How it works
 
@@ -30,6 +23,7 @@ of informations, warnings or errors with following structure:
 
 ```powershell
 $results += [PSCustomObject] @{
+    Type = $nameOfAnalyseFunction
     File = $PathAndFileName
     Line = $startLineWhereTheProblemHasBeenFound
     Column = $startColumnWhereTheProblemHasBeenFound
@@ -55,15 +49,15 @@ The AST is passed since an AST read one time will be used by several analyse tas
 
 
 ```powershell
-Register-AnalyseTask -Name "Analyze Line Length" {
+Register-AnalyseTask -Name "AnalyzeLineLength" {
     param(
         [hashtable] $TaskData,
         [String] $PathAndFileName,
         [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
     )
     # get configuration or set default
-    $maximumLineLength = if ($TaskData.analyseConfiguration.'Analyze Line Length') {
-        $TaskData.analyseConfiguration.'Analyze Line Length'.MaximumLineLength
+    $maximumLineLength = if ($TaskData.analyseConfiguration.AnalyzeLineLength) {
+        $TaskData.analyseConfiguration.AnalyzeLineLength.MaximumLineLength
     } else {
         100
     }
@@ -71,6 +65,7 @@ Register-AnalyseTask -Name "Analyze Line Length" {
     $results = $ScriptBlockAst.FindAll($predicate, $true) | ForEach-Object {
         if ($_.Extent.EndColumnNumber -gt $maximumLineLength) {
             [PSCustomObject] @{
+                Type = 'AnalyzeLineLength'
                 File = $PathAndFileName
                 Line = $_.Extent.StartLineNumber
                 Column = $_.Extent.StartColumnNumber
@@ -93,12 +88,12 @@ Register-AnalyseTask -Name "Analyze Line Length" {
 When using this it could look like following (temporarily changed the default to 90):
 
 ```
-File               Line Column Message                    Severity    Code
-----               ---- ------ -------                    --------    ----
-./Invoke-Tasks.ps1  294     13 Line too long (exceeds 90) information $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
-./Invoke-Tasks.ps1  441      9 Line too long (exceeds 90) information Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
-./Invoke-Tasks.ps1  457     17 Line too long (exceeds 90) information $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
-./Invoke-Tasks.ps1  506      9 Line too long (exceeds 90) information $allowedFunctions = @("Register-Task", 'Initialize-AnalyseTask', 'Register-AnalyseTask')
-./Invoke-Tasks.ps1  560     21 Line too long (exceeds 90) information throw "line {0}: {1} allowed only" `…
-./Invoke-Tasks.ps1  561     65 Line too long (exceeds 90) information $AllowedFunctions -Join " and "
+Type              File               Line Column Message                    Severity    Code
+----              ----               ---- ------ -------                    --------    ----
+AnalyzeLineLength ./Invoke-Tasks.ps1  294     13 Line too long (exceeds 90) information $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
+AnalyzeLineLength ./Invoke-Tasks.ps1  441      9 Line too long (exceeds 90) information Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersio…
+AnalyzeLineLength ./Invoke-Tasks.ps1  457     17 Line too long (exceeds 90) information $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
+AnalyzeLineLength ./Invoke-Tasks.ps1  506      9 Line too long (exceeds 90) information $allowedFunctions = @("Register-Task", 'Initialize-AnalyseTask', 'Register-AnalyseT…
+AnalyzeLineLength ./Invoke-Tasks.ps1  560     21 Line too long (exceeds 90) information throw "line {0}: {1} allowed only" `…
+AnalyzeLineLength ./Invoke-Tasks.ps1  561     65 Line too long (exceeds 90) information $AllowedFunctions -Join " and "
 ```

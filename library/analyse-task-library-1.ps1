@@ -1,12 +1,12 @@
-Register-AnalyseTask -Name "Analyze Line Length" {
+Register-AnalyseTask -Name "AnalyzeLineLength" {
     param(
         [hashtable] $TaskData,
         [String] $PathAndFileName,
         [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
     )
     # get configuration or set default
-    $maximumLineLength = if ($TaskData.analyseConfiguration.'Analyze Line Length') {
-        $TaskData.analyseConfiguration.'Analyze Line Length'.MaximumLineLength
+    $maximumLineLength = if ($TaskData.analyseConfiguration.AnalyzeLineLength) {
+        $TaskData.analyseConfiguration.AnalyzeLineLength.MaximumLineLength
     } else {
         100
     }
@@ -14,6 +14,7 @@ Register-AnalyseTask -Name "Analyze Line Length" {
     $results = $ScriptBlockAst.FindAll($predicate, $true) | ForEach-Object {
         if ($_.Extent.EndColumnNumber -gt $maximumLineLength) {
             [PSCustomObject] @{
+                Type = 'AnalyzeLineLength'
                 File = $PathAndFileName
                 Line = $_.Extent.StartLineNumber
                 Column = $_.Extent.StartColumnNumber
@@ -32,24 +33,24 @@ Register-AnalyseTask -Name "Analyze Line Length" {
     $TaskData.analyseResults += $results
 }
 
-Register-AnalyseTask -Name "Analyze Function Count" {
+Register-AnalyseTask -Name "AnalyzeFunctionCount" {
     param(
         [hashtable] $TaskData,
         [String] $PathAndFileName,
         [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
     )
     # get configuration
-    $maximumFunctionCount = if ($TaskData.analyseConfiguration.'Analyze Function Count') {
-        $TaskData.analyseConfiguration.'Analyze Function Count'.MaximumFunctionCount
+    $maximumFunctionCount = if ($TaskData.analyseConfiguration.AnalyzeFunctionCount) {
+        $TaskData.analyseConfiguration.AnalyzeFunctionCount.MaximumFunctionCount
     } else {
         20
     }
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
-    $results = @()
 
     if ($functions.Count -gt $maximumFunctionCount) {
-        $results += [PSCustomObject] @{
+        $TaskData.analyseResults += [PSCustomObject] @{
+            Type = 'AnalyzeFunctionCount'
             File = $PathAndFileName
             Line = 1
             Column = 1
@@ -59,6 +60,34 @@ Register-AnalyseTask -Name "Analyze Function Count" {
             Code = ""
         }
     }
+}
 
-    $TaskData.analyseResults += $results
+Register-AnalyseTask -Name "AnalyzeLineCount" {
+    param(
+        [hashtable] $TaskData,
+        [String] $PathAndFileName,
+        [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
+    )
+    # get configuration
+    $maximumLineCount = if ($TaskData.analyseConfiguration.AnalyzeLineCount) {
+        $TaskData.analyseConfiguration.AnalyzeLineCount.MaximumFunctionCount
+    } else {
+        1000
+    }
+
+    $lines = $ScriptBlockAst.Extent.EndLineNumber - $ScriptBlockAst.Extent.StartLineNumber
+
+    if ($lines -gt $maximumLineCount) {
+        $TaskData.analyseResults += [PSCustomObject] @{
+            Type = 'AnalyzeLineCount'
+            File = $PathAndFileName
+            Line = 1
+            Column = 1
+            Message = "Too many lines in file ({0} exceeds {1})" `
+                -f $lines, $maximumLineCount
+            Severity = 'information'
+            Code = ""
+        }
+    }
+
 }

@@ -1,7 +1,7 @@
 ![Build](https://github.com/thomas-lehmann-private/Invoke-Tasks/actions/workflows/invoke-tasks-build-actions.yaml/badge.svg) ![CoverageVadge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Nachtfeuer/2279dcc04bff0c1ef7b8038821f23d2e/raw/Invoke-Tasks.json) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/badge/documentation-ok-%2300ff00)](https://thomas-lehmann-private.github.io/Invoke-Tasks)
 
 # Invoke-Tasks
-Powershell based task processing. You do not require another module.
+Powershell based task processing. You do not require another module. For detailed documentation please click documentation badge to get to github pages of this repository.
 
 ## Feature summary
 
@@ -16,6 +16,7 @@ Powershell based task processing. You do not require another module.
  - Invoke-Tasks output can be hidden
  - Task data (hashtable) can be shared accross all tasks
  - Performance output for each individual task
+ - Supporting analyse tasks for static code analysis based on Powershell AST
 
 ## Quickstart
 

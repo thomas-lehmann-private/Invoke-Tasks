@@ -26,10 +26,12 @@ Initialize-AnalyseTask {
     $TaskData.analyseConfiguration = @{
         Global = @{
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
-            AcceptedSeverity = 'none'
         }
-        'Analyze Line Length' = @{
-            MaximumLineLength = 100
+        AnalyzeLineLength = @{
+            MaximumLineLength = 90
+        }
+        AnalyzeFunctionCount = @{
+            MaximumFunctionCount = 20
         }
     }
 }

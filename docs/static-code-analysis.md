@@ -11,7 +11,7 @@ Initialize-AnalyseTask {
         Global = @{
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
-        'Analyze Line Length' = @{
+        AnalyzeLineLength = @{
             MaximumLineLength = 80
         }
         # other settings
@@ -31,8 +31,28 @@ Initialize-AnalyseTask {
         Global = @{
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
-        'Analyze Function Count' = @{
+        AnalyzeFunctionCount = @{
             MaximumFunctionCount = 30
+        }
+        # other settings
+    }
+}
+```
+The severity is `information`.
+
+## Checking for line count
+
+The default is 1000. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeLineCount = @{
+            MaximumLineCount = 500
         }
         # other settings
     }
