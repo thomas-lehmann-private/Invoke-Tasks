@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.12">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.13">
     
     
       
@@ -509,13 +509,7 @@
 
 <h1 id="analyse-task-registration">Analyse Task Registration</h1>
 <h2 id="why">Why?</h2>
-<p>While writing AST functions can be challenging (but solvable) writing PSScriptAnalyzer rules
-didn't work for me. Also I did write the code exactly as defined in documentation
-(which is well documented) the using of the rules simply fails and I don't know
-why. That's why I considered to extent the <code>Invoke-Task</code> by a mechanism that is
-really simple to use and it works. Also in some cases I got false positives which
-are really annoying and with the static code analysis mechanism under control I can
-provide a mechanism that is more easier to handle (future updates).</p>
+<p>Short: I'm not happy with writing custom rules for the PSSCriptAnalyzer.</p>
 <h2 id="how-it-works">How it works</h2>
 <p>The <code>Invoke-Tasks</code> tool provides two functions:</p>
 <ul>
@@ -530,13 +524,14 @@ The <code>Initialize-AnalyseTask</code> has to be in a task file.</p>
 the Powershell AST for each defined file. As a result you might get a list
 of informations, warnings or errors with following structure:</p>
 <div class="language-powershell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">$results</span> <span class="p">+=</span> <span class="no">[PSCustomObject]</span> <span class="p">@{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">File</span> <span class="p">=</span> <span class="nv">$PathAndFileName</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">Line</span> <span class="p">=</span> <span class="nv">$startLineWhereTheProblemHasBeenFound</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">Column</span> <span class="p">=</span> <span class="nv">$startColumnWhereTheProblemHasBeenFound</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">Message</span> <span class="p">=</span> <span class="nv">$messageWhatTheProblemExactlyIs</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">Severity</span> <span class="p">=</span> <span class="nv">$severityOfTheProblem</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">Code</span> <span class="p">=</span> <span class="nv">$optionalCodeFragmentWhereTheProblemHasBeenFound</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="nb">Type </span><span class="p">=</span> <span class="nv">$nameOfAnalyseFunction</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">File</span> <span class="p">=</span> <span class="nv">$PathAndFileName</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">Line</span> <span class="p">=</span> <span class="nv">$startLineWhereTheProblemHasBeenFound</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">Column</span> <span class="p">=</span> <span class="nv">$startColumnWhereTheProblemHasBeenFound</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">Message</span> <span class="p">=</span> <span class="nv">$messageWhatTheProblemExactlyIs</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">Severity</span> <span class="p">=</span> <span class="nv">$severityOfTheProblem</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">Code</span> <span class="p">=</span> <span class="nv">$optionalCodeFragmentWhereTheProblemHasBeenFound</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="registration-of-an-analyse-task">Registration of an analyse task</h2>
 <h3 id="basic-usage-by-example">Basic usage (by example)</h3>
@@ -549,15 +544,15 @@ The parameters are always those three:</p>
 </ul>
 <p>The names of the parameters are not required to match but the order is important.
 The AST is passed since an AST read one time will be used by several analyse tasks.</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">Register-AnalyseTask</span> <span class="n">-Name</span> <span class="s2">&quot;Analyze Line Length&quot;</span> <span class="p">{</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">Register-AnalyseTask</span> <span class="n">-Name</span> <span class="s2">&quot;AnalyzeLineLength&quot;</span> <span class="p">{</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">param</span><span class="p">(</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">,</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="no">[String]</span> <span class="nv">$PathAndFileName</span><span class="p">,</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="no">[System.Management.Automation.Language.ScriptBlockAst]</span> <span class="nv">$ScriptBlockAst</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="p">)</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c"># get configuration or set default</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="nv">$maximumLineLength</span> <span class="p">=</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span><span class="p">.</span><span class="s1">&#39;Analyze Line Length&#39;</span><span class="p">)</span> <span class="p">{</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span><span class="p">.</span><span class="s1">&#39;Analyze Line Length&#39;</span><span class="p">.</span><span class="n">MaximumLineLength</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="nv">$maximumLineLength</span> <span class="p">=</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span><span class="p">.</span><span class="n">AnalyzeLineLength</span><span class="p">)</span> <span class="p">{</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span><span class="p">.</span><span class="n">AnalyzeLineLength</span><span class="p">.</span><span class="n">MaximumLineLength</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="n">100</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="p">}</span>
@@ -565,33 +560,34 @@ The AST is passed since an AST read one time will be used by several analyse tas
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="nv">$results</span> <span class="p">=</span> <span class="nv">$ScriptBlockAst</span><span class="p">.</span><span class="n">FindAll</span><span class="p">(</span><span class="nv">$predicate</span><span class="p">,</span> <span class="nv">$true</span><span class="p">)</span> <span class="p">|</span> <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="k">if</span> <span class="p">(</span><span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">EndColumnNumber</span> <span class="o">-gt</span> <span class="nv">$maximumLineLength</span><span class="p">)</span> <span class="p">{</span>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            <span class="no">[PSCustomObject]</span> <span class="p">@{</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                <span class="n">File</span> <span class="p">=</span> <span class="nv">$PathAndFileName</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                <span class="n">Line</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">StartLineNumber</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>                <span class="n">Column</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">StartColumnNumber</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                <span class="n">Message</span> <span class="p">=</span> <span class="s2">&quot;Line too long (exceeds {0})&quot;</span> <span class="o">-f</span> <span class="nv">$maximumLineLength</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>                <span class="n">Severity</span> <span class="p">=</span> <span class="s1">&#39;information&#39;</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>                <span class="n">Code</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">Text</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>            <span class="p">}</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="p">}</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="p">}</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="c"># for each line number take first reported problem only</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="nv">$results</span> <span class="p">=</span> <span class="nv">$results</span> <span class="p">|</span> <span class="nb">Group-Object</span> <span class="n">Line</span> <span class="p">|</span> <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>        <span class="nv">$_</span><span class="p">.</span><span class="nb">Group </span><span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">-First</span> <span class="n">1</span>
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="p">}</span>
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseResults</span> <span class="p">+=</span> <span class="nv">$results</span>
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="p">}</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                <span class="nb">Type </span><span class="p">=</span> <span class="s1">&#39;AnalyzeLineLength&#39;</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                <span class="n">File</span> <span class="p">=</span> <span class="nv">$PathAndFileName</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>                <span class="n">Line</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">StartLineNumber</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                <span class="n">Column</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">StartColumnNumber</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>                <span class="n">Message</span> <span class="p">=</span> <span class="s2">&quot;Line too long (exceeds {0})&quot;</span> <span class="o">-f</span> <span class="nv">$maximumLineLength</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>                <span class="n">Severity</span> <span class="p">=</span> <span class="s1">&#39;information&#39;</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                <span class="n">Code</span> <span class="p">=</span> <span class="nv">$_</span><span class="p">.</span><span class="n">Extent</span><span class="p">.</span><span class="n">Text</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>            <span class="p">}</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>        <span class="p">}</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="p">}</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="c"># for each line number take first reported problem only</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>    <span class="nv">$results</span> <span class="p">=</span> <span class="nv">$results</span> <span class="p">|</span> <span class="nb">Group-Object</span> <span class="n">Line</span> <span class="p">|</span> <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>        <span class="nv">$_</span><span class="p">.</span><span class="nb">Group </span><span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">-First</span> <span class="n">1</span>
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    <span class="p">}</span>
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseResults</span> <span class="p">+=</span> <span class="nv">$results</span>
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>When using this it could look like following (temporarily changed the default to 90):</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>File               Line Column Message                    Severity    Code
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>----               ---- ------ -------                    --------    ----
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>./Invoke-Tasks.ps1  294     13 Line too long (exceeds 90) information $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>./Invoke-Tasks.ps1  441      9 Line too long (exceeds 90) information Write-Message (&quot;Running with Powershell in version {0}&quot; -f $PSVersionTable.PSVersion)
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>./Invoke-Tasks.ps1  457     17 Line too long (exceeds 90) information $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>./Invoke-Tasks.ps1  506      9 Line too long (exceeds 90) information $allowedFunctions = @(&quot;Register-Task&quot;, &#39;Initialize-AnalyseTask&#39;, &#39;Register-AnalyseTask&#39;)
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>./Invoke-Tasks.ps1  560     21 Line too long (exceeds 90) information throw &quot;line {0}: {1} allowed only&quot; `…
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>./Invoke-Tasks.ps1  561     65 Line too long (exceeds 90) information $AllowedFunctions -Join &quot; and &quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Type              File               Line Column Message                    Severity    Code
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>----              ----               ---- ------ -------                    --------    ----
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  294     13 Line too long (exceeds 90) information $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  441      9 Line too long (exceeds 90) information Write-Message (&quot;Running with Powershell in version {0}&quot; -f $PSVersionTable.PSVersio…
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  457     17 Line too long (exceeds 90) information $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  506      9 Line too long (exceeds 90) information $allowedFunctions = @(&quot;Register-Task&quot;, &#39;Initialize-AnalyseTask&#39;, &#39;Register-AnalyseT…
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  560     21 Line too long (exceeds 90) information throw &quot;line {0}: {1} allowed only&quot; `…
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  561     65 Line too long (exceeds 90) information $AllowedFunctions -Join &quot; and &quot;
 </span></code></pre></div>
 
 
