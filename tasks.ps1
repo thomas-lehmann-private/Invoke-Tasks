@@ -28,7 +28,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeLineLength = @{
-            MaximumLineLength = 90
+            MaximumLineLength = 100
         }
         AnalyzeFunctionCount = @{
             MaximumFunctionCount = 20
