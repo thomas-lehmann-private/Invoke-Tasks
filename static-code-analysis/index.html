@@ -388,6 +388,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-line-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function line count
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -452,6 +461,15 @@
   <a href="#checking-for-line-count" class="md-nav__link">
     <span class="md-ellipsis">
       Checking for line count
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-for-function-line-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function line count
     </span>
   </a>
   
@@ -524,6 +542,19 @@ The severity is <code>information</code>.</p>
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="p">}</span>
 </span></code></pre></div>
 The severity is <code>information</code>.</p>
+<h2 id="checking-for-function-line-count">Checking for function line count</h2>
+<p>The default is 50. You can change it like following:</p>
+<p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="p">}</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="c"># other settings</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="p">}</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
+</span></code></pre></div>
+The severity is <code>warning</code>.</p>
 
 
 
