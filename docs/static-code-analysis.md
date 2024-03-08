@@ -71,6 +71,29 @@ Initialize-AnalyseTask {
         Global = @{
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
+        AnalyzeFunctionLineCount = @{
+            MaximumFunctionLineCount = 45
+        }
+        # other settings
+    }
+}
+```
+The severity is `warning`.
+
+## Checking for function parameter count
+
+The default is 5. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeFunctionParameterCount = @{
+            MaximumFunctionParameterCount = 2
+        }
         # other settings
     }
 }

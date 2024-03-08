@@ -125,3 +125,40 @@ Register-AnalyseTask -Name "AnalyzeFunctionLineCount" {
         }
     }
 }
+
+Register-AnalyseTask -Name "AnalyzeFunctionParameterCount" {
+    param(
+        [hashtable] $TaskData,
+        [String] $PathAndFileName,
+        [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
+    )
+
+    # get configuration
+    $configuration = $TaskData.analyseConfiguration
+    $maximumFunctionParameterCount = if ($configuration.AnalyzeFunctionParameterCount) {
+            $configuration.AnalyzeFunctionParameterCount.MaximumFunctionParameterCount
+    } else {
+        5
+    }
+
+    $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
+    $functions = $ScriptBlockAst.FindAll($predicate, $true)
+
+    $functions | ForEach-Object {
+        $function = $_
+        $parameters = $function.Body.ParamBlock.Parameters
+
+        if ($parameters.Count -gt $maximumFunctionParameterCount) {
+            $TaskData.analyseResults += [PSCustomObject] @{
+                Type = 'AnalyzeFunctionParameterCount'
+                File = $PathAndFileName
+                Line = $function.Extent.StartLineNumber
+                Column = $function.Extent.StartColumnNumber
+                Message = "Too many parameters for function '{0}' ({1} exceeds {2})" `
+                    -f $function.Name, $parameters.Count, $maximumFunctionParameterCount
+                Severity = 'warning'
+                Code = ""
+            }
+        }
+    }
+}
