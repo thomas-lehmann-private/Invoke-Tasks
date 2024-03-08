@@ -78,3 +78,21 @@ However following important notes:
 
 You can add `-Skip` to a task and then it is not execute. However if an executable task depend on such a task that
 dependency will be executed.
+
+## Tasks with dependencies
+
+For each task you can specify exactly one dependency by using the
+name of the related task. With this you can change the order of
+the task execution.
+
+```powershell
+Register-Task -Name "First Task" -DependsOn "Second Task" {
+    Write-Host "First Task"
+}
+
+Register-Task -Name "Second Task" {
+    Write-Host "Second Task"
+}
+```
+
+In this case the output of the second task appears before the output of the first task.
