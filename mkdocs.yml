@@ -9,6 +9,8 @@ nav:
     - task-registration.md
     - analyse-task-registration.md
     - static-code-analysis.md
+    - command-line-details.md
+    - useful-links.md
 
 theme:
   name: material
