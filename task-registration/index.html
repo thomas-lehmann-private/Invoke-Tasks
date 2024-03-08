@@ -381,6 +381,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#tasks-with-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tasks with dependencies
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -423,6 +432,48 @@
   
   <span class="md-ellipsis">
     Static code analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command-line-details/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command line details
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../useful-links/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Useful links
   </span>
   
 
@@ -525,6 +576,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#tasks-with-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tasks with dependencies
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -605,6 +665,19 @@ When call <code>Invoke-Tags</code> with <code>-Tags</code> the tasks are filtere
 <h3 id="skip">Skip</h3>
 <p>You can add <code>-Skip</code> to a task and then it is not execute. However if an executable task depend on such a task that
 dependency will be executed.</p>
+<h2 id="tasks-with-dependencies">Tasks with dependencies</h2>
+<p>For each task you can specify exactly one dependency by using the
+name of the related task. With this you can change the order of
+the task execution.</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">Register-Task</span> <span class="n">-Name</span> <span class="s2">&quot;First Task&quot;</span> <span class="n">-DependsOn</span> <span class="s2">&quot;Second Task&quot;</span> <span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="nb">Write-Host</span> <span class="s2">&quot;First Task&quot;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">}</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">Register-Task</span> <span class="n">-Name</span> <span class="s2">&quot;Second Task&quot;</span> <span class="p">{</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">Write-Host</span> <span class="s2">&quot;Second Task&quot;</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>In this case the output of the second task appears before the output of the first task.</p>
 
 
 
