@@ -41,7 +41,9 @@ Initialize-AnalyseTask {
         AnalyzeFunctionLineCount = @{
             MaximumFunctionLineCount = 50
         }
-
+        AnalyzeLineCount = @{
+            MaximumLineCount = 700
+        }
         AnalyzeFunctionParameterCount = @{
             MaximumFunctionParameterCount = 5
         }

@@ -1,3 +1,26 @@
+<#
+    The MIT License
+
+    Copyright 2022 Thomas Lehmann.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+#>
 Register-AnalyseTask -Name "AnalyzeLineLength" {
     param(
         [hashtable] $TaskData,
@@ -70,7 +93,7 @@ Register-AnalyseTask -Name "AnalyzeLineCount" {
     )
     # get configuration
     $maximumLineCount = if ($TaskData.analyseConfiguration.AnalyzeLineCount) {
-        $TaskData.analyseConfiguration.AnalyzeLineCount.MaximumFunctionCount
+        $TaskData.analyseConfiguration.AnalyzeLineCount.MaximumLineCount
     } else {
         1000
     }
@@ -156,6 +179,73 @@ Register-AnalyseTask -Name "AnalyzeFunctionParameterCount" {
                 Column = $function.Extent.StartColumnNumber
                 Message = "Too many parameters for function '{0}' ({1} exceeds {2})" `
                     -f $function.Name, $parameters.Count, $maximumFunctionParameterCount
+                Severity = 'warning'
+                Code = ""
+            }
+        }
+    }
+}
+
+Register-AnalyseTask -Name "AnalyzeFunctionNames" {
+    param(
+        [hashtable] $TaskData,
+        [String] $PathAndFileName,
+        [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
+    )
+
+    # get configuration
+    $configuration = $TaskData.analyseConfiguration
+    $functionNameRegex = if ($configuration.AnalyzeFunctionNames) {
+            $configuration.AnalyzeFunctionNames.FunctionNameRegex
+    } else {
+        "^[A-Z][a-z]+([A-Z][a-z]+)*$"
+    }
+
+    $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
+    $functions = $ScriptBlockAst.FindAll($predicate, $true)
+
+    $functions | ForEach-Object {
+        $function = $_
+
+        $tokens = $function.Name -Split '-'
+
+        if ($tokens.count -ne 2) {
+            $TaskData.analyseResults += [PSCustomObject] @{
+                Type = 'AnalyzeFunctionName'
+                File = $PathAndFileName
+                Line = $function.Extent.StartLineNumber
+                Column = $function.Extent.StartColumnNumber
+                Message = "Function '{0}' should have exactly one dash" -f $function.Name
+                Severity = 'warning'
+                Code = ""
+            }
+        }
+
+        $verb = $tokens[0]
+        $name = $tokens[1]
+
+        $foundVerb = Get-Verb | Where-Object { $_.Verb -eq $verb }
+        if (-not $foundVerb) {
+            $TaskData.analyseResults += [PSCustomObject] @{
+                Type = 'AnalyzeFunctionName'
+                File = $PathAndFileName
+                Line = $function.Extent.StartLineNumber
+                Column = $function.Extent.StartColumnNumber
+                Message = "Function '{0}' is not using standard verbs (see Get-Verb)" `
+                    -f $function.Name
+                Severity = 'warning'
+                Code = ""
+            }
+        }
+
+        if (-not ($name -cmatch $functionNameRegex)) {
+            $TaskData.analyseResults += [PSCustomObject] @{
+                Type = 'AnalyzeFunctionName'
+                File = $PathAndFileName
+                Line = $function.Extent.StartLineNumber
+                Column = $function.Extent.StartColumnNumber
+                Message = "Function '{0}' is not written in camel case (after the dash)!" `
+                    -f $function.Name
                 Severity = 'warning'
                 Code = ""
             }
