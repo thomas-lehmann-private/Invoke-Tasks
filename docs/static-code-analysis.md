@@ -99,3 +99,30 @@ Initialize-AnalyseTask {
 }
 ```
 The severity is `warning`.
+
+## Checking for function name
+
+The name should be always like this:
+
+- Using a known verb before the dash like `Initialize` (see Get-Verb)
+- The name in CamelCase after the dash like `AnalyseTask` 
+
+You cannot change the verb checking. But you can Change the regex for the name
+after the dash like this (showing the default here):
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeFunctionName = @{
+            FunctionNameRegex = "^[A-Z][a-z]+([A-Z][a-z]+)*$"
+        }
+        # other settings
+    }
+}
+```
+
+The severity is `warning`.

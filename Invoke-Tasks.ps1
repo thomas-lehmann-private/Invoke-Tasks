@@ -573,7 +573,6 @@ function Test-Script() {
     }
 }
 
-
 # private Invoke-Task context
 $privateContext = @{
     errorFound = $false
