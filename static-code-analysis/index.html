@@ -408,6 +408,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function name
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -537,6 +546,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function name
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -636,6 +654,28 @@ The severity is <code>warning</code>.</p>
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
 </span></code></pre></div>
 The severity is <code>warning</code>.</p>
+<h2 id="checking-for-function-name">Checking for function name</h2>
+<p>The name should be always like this:</p>
+<ul>
+<li>Using a known verb before the dash like <code>Initialize</code> (see Get-Verb)</li>
+<li>The name in CamelCase after the dash like <code>AnalyseTask</code> </li>
+</ul>
+<p>You cannot change the verb checking. But you can Change the regex for the name
+after the dash like this (showing the default here):</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="p">}</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="n">AnalyzeFunctionName</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>            <span class="n">FunctionNameRegex</span> <span class="p">=</span> <span class="s2">&quot;^[A-Z][a-z]+([A-Z][a-z]+)*$&quot;</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="p">}</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="c"># other settings</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="p">}</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>The severity is <code>warning</code>.</p>
 
 
 
