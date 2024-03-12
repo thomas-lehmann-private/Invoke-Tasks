@@ -15,7 +15,7 @@ Describe "Running Analyse Tasks Tests" {
         ./Invoke-Tasks.ps1  `
             -TaskData $taskData `
             -TaskFile tests/taskfiles/OneTaskWithAnalyse.ps1 `
-            -TaskLibraryPath ./library/analyse-task-library-1.ps1 `
+            -TaskLibraryPath ./library `
             -Quiet
 
         $taskData.privateContext.errorFound | Should -Be $true
@@ -29,7 +29,7 @@ Describe "Running Analyse Tasks Tests" {
         ./Invoke-Tasks.ps1  `
             -TaskData $taskData `
             -TaskFile tests/taskfiles/OneTaskWithInitializeTwice.ps1 `
-            -TaskLibraryPath ./library/analyse-task-library-1.ps1 `
+            -TaskLibraryPath ./library `
             -Quiet
 
         $taskData.privateContext.errorFound | Should -Be $true
@@ -41,7 +41,7 @@ Describe "Running Analyse Tasks Tests" {
         ./Invoke-Tasks.ps1  `
             -TaskData $taskData `
             -TaskFile tests/taskfiles/OneTaskWithRegisterAnalyseTaskTwice.ps1 `
-            -TaskLibraryPath ./library/analyse-task-library-1.ps1 `
+            -TaskLibraryPath ./library `
             -Quiet
 
         $taskData.privateContext.errorFound | Should -Be $true
