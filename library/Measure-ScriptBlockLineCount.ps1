@@ -1,0 +1,57 @@
+<#
+    The MIT License
+
+    Copyright 2024 Thomas Lehmann.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+#>
+Register-AnalyseTask -Name "AnalyzeScriptBlockLineCount" {
+    param(
+        [hashtable] $TaskData,
+        [String] $PathAndFileName,
+        [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
+    )
+    # get configuration
+    $maximumCount = if ($TaskData.analyseConfiguration.AnalyzeScriptBlockLineCount) {
+        $TaskData.analyseConfiguration.AnalyzeScriptBlockLineCount.MaximumCount
+    } else {
+        50
+    }
+    $predicate = {$args[0] -is [System.Management.Automation.Language.ScriptBlockAst]}
+    $scriptBlocks = $ScriptBlockAst.FindAll($predicate, $true)
+
+    # we filter out the script blocks representing a file (start by line number 1)
+    $scriptBlocks | Where-Object { $_.Extent.StartLineNumber -ne 1 } | ForEach-Object {
+        $scriptBlock = $_
+        $lineCount = $scriptBlock.Extent.EndLineNumber - $scriptBlock.Extent.StartLineNumber
+
+        if ($lineCount -gt $maximumCount) {
+            $TaskData.analyseResults += [PSCustomObject] @{
+                Type = 'AnalyzeScriptBlockLineCount'
+                File = $PathAndFileName
+                Line = $scriptBlock.Extent.StartLineNumber
+                Column = $scriptBlock.Extent.StartColumnNumber
+                Message = "Too many lines in script block ({0} exceeds {1})" `
+                    -f $lineCount, $maximumCount
+                Severity = 'warning'
+                Code = ""
+            }
+        }
+    }
+}
