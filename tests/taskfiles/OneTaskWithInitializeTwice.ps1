@@ -5,7 +5,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./tests/taskfiles/OneTaskWithInitializeTwice.ps1')
         }
         AnalyzeLineLength = @{
-            MaximumLineLength = 60
+            MaximumLength = 60
         }
     }
 }
@@ -17,7 +17,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./tests/taskfiles/OneTaskWithInitializeTwice.ps1')
         }
         AnalyzeLineLength = @{
-            MaximumLineLength = 60
+            MaximumLength = 60
         }
     }
 }
