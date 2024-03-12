@@ -12,7 +12,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeLineLength = @{
-            MaximumLineLength = 80
+            MaximumLength = 80
         }
         # other settings
     }
@@ -32,7 +32,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeFunctionCount = @{
-            MaximumFunctionCount = 30
+            MaximumCount = 30
         }
         # other settings
     }
@@ -52,7 +52,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeLineCount = @{
-            MaximumLineCount = 500
+            MaximumCount = 500
         }
         # other settings
     }
@@ -72,13 +72,14 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeFunctionLineCount = @{
-            MaximumFunctionLineCount = 45
+            MaximumCount = 45
         }
         # other settings
     }
 }
 ```
 The severity is `warning`.
+
 
 ## Checking for function parameter count
 
@@ -92,7 +93,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeFunctionParameterCount = @{
-            MaximumFunctionParameterCount = 2
+            MaximumCount = 2
         }
         # other settings
     }
@@ -126,3 +127,28 @@ Initialize-AnalyseTask {
 ```
 
 The severity is `warning`.
+
+## Checking for script block line count
+
+The default is 50. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeScriptBlockLineCount = @{
+            MaximumCount = 45
+        }
+        # other settings
+    }
+}
+```
+The severity is `warning`.
+
+**Please note**: The limit includes also functions since
+a function does have a script block too. The main focus
+of course a script block that are not function (eventually
+I can filter out those ones later one)

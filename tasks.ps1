@@ -33,19 +33,19 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = $files
         }
         AnalyzeLineLength = @{
-            MaximumLineLength = 100
+            MaximumLength = 100
         }
         AnalyzeFunctionCount = @{
-            MaximumFunctionCount = 20
+            MaximumCount = 20
         }
         AnalyzeFunctionLineCount = @{
-            MaximumFunctionLineCount = 50
+            MaximumCount = 50
         }
         AnalyzeLineCount = @{
-            MaximumLineCount = 700
+            MaximumCount = 700
         }
         AnalyzeFunctionParameterCount = @{
-            MaximumFunctionParameterCount = 5
+            MaximumCount = 5
         }
     }
 }
