@@ -426,6 +426,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-comloc-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function COM/LOC ratio
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -573,6 +582,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-comloc-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function COM/LOC ratio
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -714,6 +732,31 @@ The severity is <code>warning</code>.</p>
 a function does have a script block too. The main focus
 of course a script block that are not function (eventually
 I can filter out those ones later one)</p>
+<h2 id="checking-for-function-comloc-ratio">Checking for function COM/LOC ratio</h2>
+<p>The default is 0.25. You can change it like following:</p>
+<p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="p">}</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="n">AnalyzeFunctionComLocRatio</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>            <span class="n">Ratio</span> <span class="p">=</span> <span class="n">0</span><span class="p">.</span><span class="n">5</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="p">}</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c"># other settings</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="p">}</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="p">}</span>
+</span></code></pre></div>
+The severity is <code>warning</code>. A ratio of 0.25 means 1/4 means one line comment (at least) and three lines of code to keep the ratio. As an example:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">function</span> <span class="nb">Write-Message</span><span class="p">()</span> <span class="p">{</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="k">param</span><span class="p">(</span><span class="no">[String]</span> <span class="nv">$Message</span><span class="p">)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="c"># write information message to console</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="nb">Write-Information</span> <span class="s2">&quot;Invoke-Tasks :: $Message&quot;</span> <span class="n">-InformationAction</span> <span class="k">Continue</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>This function will generate following warning message when the ratio would be adjusted to 0.5:
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Too less comments &#39;Write-Message&#39; (1/3=0,33 is below 0,5)
+</span></code></pre></div></p>
 
 
 
