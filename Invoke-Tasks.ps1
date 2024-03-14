@@ -103,6 +103,7 @@ $global:analyseTasks = @()
 #>
 function Write-Message() {
     param([String] $Message)
+    # write information message to console
     Write-Information "Invoke-Tasks :: $Message" -InformationAction Continue
 }
 
@@ -136,12 +137,12 @@ function Register-Task() {
     )
 
     $global:tasks += [PSCustomObject] @{
-        Name = $Name
-        ScriptBlock = $ScriptBlock
-        Tags = $Tags
-        DependsOn = $DependsOn
-        Skip = $Skip
-        Completed = $false
+        Name = $Name                    # name of the task
+        ScriptBlock = $ScriptBlock      # the task code to execute
+        Tags = $Tags                    # tags for which can be filtered
+        DependsOn = $DependsOn          # name of another task that should be executed first
+        Skip = $Skip                    # when true then task execution is skipped
+        Completed = $false              # internally used: when true then task is completed
     }
 }
 
@@ -166,16 +167,14 @@ function Register-Task() {
 function Register-AnalyseTask() {
     param (
         [String] $Name,
-        [scriptblock] $ScriptBlock,
-        [String[]] $Tags = @()
+        [scriptblock] $ScriptBlock
     )
 
     # same elements cannot be added twice
     if (-not $($global:analyseTasks | Where-Object{ $_.Name -eq $Name})) {
         $global:analyseTasks += [PSCustomObject] @{
-            Name = $Name
-            ScriptBlock = $ScriptBlock
-            Tags = $Tags
+            Name = $Name                # name of the analyse task
+            ScriptBlock = $ScriptBlock  # the analyse code (AST)
         }
     }
 }
@@ -194,10 +193,12 @@ function Register-AnalyseTask() {
 function Initialize-AnalyseTask() {
     param([scriptblock] $ScriptBlock)
 
+    # you cannot initialize static code analyse twice
     if ($null -ne $global:initializeAnalyseTasks) {
         throw "Initialization for analyse tasks already registered!"
     }
 
+    # register code for initializing all analyse tasks (provide configuration at least)
     $global:initializeAnalyseTasks = $ScriptBlock
 }
 
@@ -238,6 +239,7 @@ function Use-Task() {
         $dependency = $libraryTask
         while ($dependency.DependsOn) {
             $name = $dependency.DependsOn
+            # checking that library task does exist
             $dependency = $global:libraryTasks | Where-Object { $_.Name -eq $name }
             if (-not $dependency) {
                 throw ("Unknown dependency for library task {0}" -f $name)
@@ -246,19 +248,19 @@ function Use-Task() {
         }
 
         $global:tasks += [PSCustomObject]@{
-            Name = $Name
-            ScriptBlock = {
+            Name = $Name                 # name of the library task
+            ScriptBlock = {              # running dependencies first
                 param([hashtable] $TaskData)
                 & $ScriptBlock $TaskData
                 # running all dependencies
                 foreach ($dependency in $dependencies) {
                     & $dependency.ScriptBlock $TaskData
                 }
-            }.GetNewClosure()
-            Tags = $libraryTask.Tags
-            DependsOn = $null
-            Skip = $libraryTask.Skip
-            Completed = $false
+            }.GetNewClosure()            # closure is necessary to store used vars from outside
+            Tags = $libraryTask.Tags     # tags provided by library task
+            DependsOn = $null            # dependency handled by scriptblock
+            Skip = $libraryTask.Skip     # TODO: think about it
+            Completed = $false           # marking task as completed when $true
         }
     } else {
         throw ("Unknown library task {0}" -f $LibraryTaskName)
@@ -286,11 +288,16 @@ function Search-Output() {
 
     # trying to capture output for defined regexes
     foreach ($captureRegex in $CaptureRegexes) {
+        # splitting parameters for regex into name and regex
         $separatorPos = $captureRegex.IndexOf('=')
+        # name of the regex
         $name = $captureRegex.SubString(0, $separatorPos)
+        # concrete regex itself
         $regex = $captureRegex.SubString($separatorPos+1)
+        # trying to match regex
         $found = $($Output | Select-String -Pattern $regex)
         if ($found) {
+            # adding found output for given regex under given name
             $capturedDetails += [PSCustomObject] @{$name = $found.Matches.Groups[1].Value}
         }
     }
@@ -310,22 +317,24 @@ function Search-Output() {
     Those tags specified on Invoke-Tasks (command line)
 #>
 function Test-AllTag() {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'TaskName',
-    Justification = 'False positive as rule does not know that Where-Object operates within the same scope')]
     param(
         [String] $TaskName,
         [String[]] $Tags
     )
 
+    # get task for given name
     $task = $global:tasks | Where-Object { $_.Name -eq $TaskName }
     $count = 0
 
+    # ensure that task has all tags as define by the command line arguments
     foreach ($tag in $Tags) {
         if ($task.Tags -contains $tag) {
             $count += 1
         }
     }
 
+    # $true, when concrete task does match all
+    # tags defined by the command line arguments
     return $count -eq $Tags.Count
 }
 
@@ -358,30 +367,30 @@ function Invoke-Task() {
         [Int] $Depth = 0
     )
 
-    if ($Depth -gt $global:tasks.Count) {
+    if ($Depth -gt $global:tasks.Count) { # cyclic dependency detected
         throw "Cyclic dependencies are not allowed!"
     }
 
     $task = $global:tasks | Where-Object { $_.Name -eq $Name }
-    if (-not $task) {
+    if (-not $task) { # task as dependency not found
         throw "Unknown task (or dependency)"
     }
 
-    if ($task.DependsOn) {
+    if ($task.DependsOn) { # executing dependency first
         Invoke-Task -Name $task.DependsOn -TaskData $TaskData -Depth $($Depth+1)
     }
 
-    if ($TaskData.privateContext.checkMode) {
+    if ($TaskData.privateContext.checkMode) { # when check mode then task won't be executed
         $task.Completed = $true
         return
     }
 
-    if (-not $Quiet) {
+    if (-not $Quiet) { # printint task task if quiet mode is not active
         Write-Message ("Running task '{0}'" -f $task.Name)
     }
 
     try {
-        $performance = Measure-Command {
+        $performance = Measure-Command { # measure performance of task execution
             & $task.ScriptBlock $TaskData 6>&1 `
                 | Tee-Object -Variable output | Out-Default
 
@@ -390,13 +399,13 @@ function Invoke-Task() {
                 += $(Search-Output $output $TaskData.privateContext.captureRegexes)
         }
 
-        if (-not $Quiet) {
+        if (-not $Quiet) { # printint task performance when quiet mode is not active
             Write-Message (" ... took {0} seconds!" -f $performance.TotalSeconds)
         }
 
-        $task.Completed = $true
+        $task.Completed = $true # all fine, task has been executed
     } catch {
-        Write-Error ("{0}" -f $_)
+        Write-Error ("{0}" -f $_) # someting went wrong
         $TaskData.privateContext.errorFound = $true
     }
 }
@@ -411,19 +420,23 @@ function Invoke-Task() {
 #>
 function Invoke-AllAnalyseTask() {
     param([Hashtable] $TaskData)
-
+    # analyse tasks are executed if given and checkmode is not active
     if (($global:analyseTasks.Count -gt 0) -and (-not $TaskData.privateContext.checkMode)) {
+        # of course: initialize task must be given
         if ($global:initializeAnalyseTasks) {
             foreach ($analyseTask in $global:analyseTasks) {
+                # running initialize task when configuration is not yet given
                 if (-not $TaskData.analyseConfiguration) {
                     & $global:initializeAnalyseTasks $TaskData
                 }
-
+                # running analyse task for each register path and filename
                 $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
                 foreach ($pathAndFileName in $fileNames) {
+                    # parsing file to get AST to pass to each analyse function
                     $content = Get-Content $pathAndFileName -Raw
                     $scriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput(`
                         $content, [ref]$null, [ref]$null)
+                    # running concrete analyse function
                     & $analyseTask.ScriptBlock $TaskData $pathAndFileName $scriptBlockAst
                 }
             }
@@ -448,12 +461,11 @@ function Invoke-AllTask() {
         [Hashtable] $TaskData
     )
 
-    # ensure that all tasks are registered
-    . $TaskFile
+    . $TaskFile # ensure that all tasks are registered
 
     if ($TaskData.privateContext.checkMode) {
         $uniqueTasks = $global:tasks | ForEach-Object { $_.Name} | Get-Unique
-        if ($uniqueTasks.Count -ne $tasks.Count) {
+        if ($uniqueTasks.Count -ne $tasks.Count) { # ensure that each task name is unique
             Write-Error ("At least one task has same name as another!")
             $TaskData.privateContext.errorFound = $true
             return
@@ -461,33 +473,33 @@ function Invoke-AllTask() {
     }
 
     if ((-not $Quiet) -and (-not $TaskData.privateContext.checkMode)) {
+        #  printing some useful information about the environment
         Write-Message ("Running on OS {0}" -f $PSVersionTable.OS)
         Write-Message ("Running with Powershell in version {0}" -f $PSVersionTable.PSVersion)
         Write-Message ("  ... capture regexes: {0}" `
             -f $($TaskData.privateContext.captureRegexes -Join " , "))
-
         $global:tasks | Select-Object Name, DependsOn, Skip, Parameters | Format-Table
     }
 
+    # running analyse tasks first (if check mode is not active)
     Invoke-AllAnalyseTask -TaskData $TaskData
-
+    # running all registered tasks (if check mode is not active)
     foreach ($task in $global:tasks) {
-        if ($task.Skip -or $task.Completed) {
+        if ($task.Skip -or $task.Completed) { # we don't execute completed tasks and skipped tasks
             continue
         }
-
-        if (-not $(Test-AllTag $task.Name $TaskData.privateContext.tags)) {
+        if (-not $(Test-AllTag $task.Name $TaskData.privateContext.tags)) { # filter tasks by tags
             $task.Completed = $true
             continue
         }
 
         try {
-            Invoke-Task -Name $task.Name -TaskData $TaskData
+            Invoke-Task -Name $task.Name -TaskData $TaskData # trying to execute taks
         } catch {
-            Write-Error ("{0}" -f $_)
+            Write-Error ("{0}" -f $_) # something went wrong
             $TaskData.privateContext.errorFound = $true
         }
-
+        # check again here because not always an exception need to be the problem
         if ($TaskData.privateContext.errorFound) {
             break
         }
@@ -515,22 +527,21 @@ function Initialize-Library() {
         if (Test-Path -Path $TaskLibraryPath -Type Leaf) {
             Write-Message ("Loading Library File {0}" -f $TaskLibraryPath)
             Test-Script -Path $TaskLibraryPath -AllowedFunctions $allowedFunctions
-            . $TaskLibraryPath
+            . $TaskLibraryPath # registering all library tasks
             Write-Message("  ... done.")
         } else {
             Write-Message ("Loading Library Files from Path {0}" -f $TaskLibraryPath)
             # is a folder
             $files = Get-ChildItem -Path $TaskLibraryPath -Filter *.ps1
-            foreach ($file in $files) {
+            foreach ($file in $files) { # intention: registering all tasks for each library file
                 Write-Message ("  ... loading Library File {0}" -f $TaskLibraryPath)
                 Test-Script -Path $file -AllowedFunctions $allowedFunctions
-                . $file
+                . $file # registering all library task
                 Write-Message("   ...... done.")
             }
         }
-
-        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '$global:libraryTasks',
-        Justification = 'False positive as rule does not know that it is used via function Use-Task')]
+        # since mechanism of task registration is using $global:tasks we
+        # have to move the task to library tasks. With Use-Task those are used then.
         $global:libraryTasks = $global:tasks
         $global:tasks = @()
     }
@@ -554,21 +565,21 @@ function Test-Script() {
     )
 
     if (Test-Path -Path $Path) {
-        $fileContent = Get-Content $Path -Raw
-        # parsing script
-        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput(
+        $fileContent = Get-Content $Path -Raw # loading content of script
+        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput( # parsing script
             $fileContent, [ref]$null, [ref]$null)
-
+        # searching for statements
         foreach ($statement in $scriptAst.EndBlock.Statements) {
-            $name = $($statement -Split " ")[0]
+            $name = $($statement -Split " ")[0] # get name of a command
             if ($name) {
-                if ($name -notin $AllowedFunctions) {
+                if ($name -notin $AllowedFunctions) { # we allow defined names only
                     throw "line {0}: {1} allowed only" `
                         -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
                 }
             }
         }
     } else {
+        # either task file is not a task file or someone tried to do more than allowed
         throw "Script {0} not found!" -f $Path
     }
 }

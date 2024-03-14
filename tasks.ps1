@@ -47,6 +47,9 @@ Initialize-AnalyseTask {
         AnalyzeFunctionParameterCount = @{
             MaximumCount = 5
         }
+        AnalyzeFunctionComLocRatio = @{
+            Ratio = 0.25
+        }
     }
 }
 

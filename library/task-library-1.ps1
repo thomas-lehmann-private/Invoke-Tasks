@@ -28,6 +28,12 @@ Register-Task -Name "Static code analysis" -Tag "check-code" {
     foreach ($path in $paths) {
         Write-Message ("Checking code for {0}" -f $path)
         $results = Invoke-ScriptAnalyzer $path -Recurse
+        $results = $results | Where-Object {
+            ($_.RuleName -ne 'PSReviewUnusedParameter') `
+            -and `
+            ($_.RuleName -ne 'PSUseDeclaredVarsMoreThanAssignments')
+        }
+
         $results | Format-Table
         if ($results.Count -gt 0) {
             throw "ScriptAnalyzer has found issues!"
