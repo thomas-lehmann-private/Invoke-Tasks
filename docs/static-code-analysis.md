@@ -152,3 +152,37 @@ The severity is `warning`.
 a function does have a script block too. The main focus
 of course a script block that are not function (eventually
 I can filter out those ones later one)
+
+## Checking for function COM/LOC ratio
+
+The default is 0.25. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeFunctionComLocRatio = @{
+            Ratio = 0.5
+        }
+        # other settings
+    }
+}
+```
+The severity is `warning`. A ratio of 0.25 means 1/4 means one line comment (at least) and three lines of code to keep the ratio. As an example:
+
+```powershell
+function Write-Message() {
+    param([String] $Message)
+    # write information message to console
+    Write-Information "Invoke-Tasks :: $Message" -InformationAction Continue
+}
+```
+
+This function will generate following warning message when the ratio would be adjusted to 0.5:
+```
+Too less comments 'Write-Message' (1/3=0,33 is below 0,5)
+```
+

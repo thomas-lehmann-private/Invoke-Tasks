@@ -41,7 +41,8 @@ Register-AnalyseTask -Name "AnalyzeLineLength" {
                 File = $PathAndFileName
                 Line = $_.Extent.StartLineNumber
                 Column = $_.Extent.StartColumnNumber
-                Message = "Line too long (exceeds {0})" -f $maximumLength
+                Message = "Line too long ({0} exceeds {0})" `
+                    -f $_.Extent.EndColumnNumber, $maximumLength
                 Severity = 'information'
                 Code = $_.Extent.Text
             }
