@@ -186,3 +186,12 @@ This function will generate following warning message when the ratio would be ad
 Too less comments 'Write-Message' (1/3=0,33 is below 0,5)
 ```
 
+## Checking for function unused parameter
+
+There is nothing you can adjust. When a parameter (in a param Block) does
+exist but is not used it will be reported. The severity is `warning`.
+
+## Checking for trailing whitepaces
+
+There is nothing you can adjust. When there are trailing whitespaces it will
+be reported. The severity is `information`.
