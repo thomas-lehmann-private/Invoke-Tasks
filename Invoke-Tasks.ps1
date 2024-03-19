@@ -121,7 +121,7 @@ function Write-Message() {
     .PARAMETER Tags
     optional list of tags that can be defined to filter tasks on demand
 
-    .PARAMETER DependOn
+    .PARAMETER DependsOn
     optional name of a task that must exist to be executed bevor given one
 
     .PARAMETER Skip
@@ -160,9 +160,6 @@ function Register-Task() {
 
     .PARAMETER ScriptBlock
     The analyse code block
-
-    .PARAMETER Tags
-    Defined tags to allow
 #>
 function Register-AnalyseTask() {
     param (
@@ -183,9 +180,6 @@ function Register-AnalyseTask() {
 <#
     .SYNOPSIS
     Providing configuration as hashtable for specific language and related analyse tasks
-
-    .PARAMETER Language
-    Initialization for given language for analyze tasks depending on it
 
     .PARAMETER ScriptBlock
     Initialization Code providing hashtable with the configuration
@@ -220,8 +214,6 @@ function Initialize-AnalyseTask() {
     .PARAMETER ScriptBlock
     The scriptblock to be used to define parameters before the library task is executed.
 #>
-
-
 function Use-Task() {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ScriptBlock',
     Justification = 'False positive as rule does not know that the newly created scriptblock operates within the same scope')]
@@ -275,7 +267,7 @@ function Use-Task() {
     .PARAMETER Output
     The captured output
 
-    .PARAMETER CapturedRegexes
+    .PARAMETER CaptureRegexes
     The list of named regexes
 #>
 function Search-Output() {
@@ -513,9 +505,6 @@ function Invoke-AllTask() {
 
     .PARAMETER TaskLibraryPath
     Path and filename of library file or a folder with multiple files
-
-    .PARAMETER TaskData
-    Required for error handling
 #>
 function Initialize-Library() {
     param([String] $TaskLibraryPath)
@@ -636,6 +625,7 @@ if (-not $TaskData.privateContext.errorFound) {
 
 if ($TaskData.analyseResults.Count -gt 0) {
     $TaskData.analyseResults | Format-Table
+    $TaskData.analyseResults | ConvertTo-Json | Set-Content analyse.json
     $TaskData.privateContext.errorFound = $true
 }
 
