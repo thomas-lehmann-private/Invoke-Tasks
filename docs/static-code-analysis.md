@@ -1,5 +1,8 @@
 # Static code analysis
 
+## Overview
+![image](Powershell Static Code Analysis.jpeg)
+
 ## Checking for line length
 
 The default is 100. You can change it like following:
@@ -195,3 +198,12 @@ exist but is not used it will be reported. The severity is `warning`.
 
 There is nothing you can adjust. When there are trailing whitespaces it will
 be reported. The severity is `information`.
+
+## Checking for function documentation
+
+There is nothing you can adjust. The analyse does report:
+- missing synopsis (at least this should be provided)
+- missing parameter documentation
+- documented parameter that is not in the parameter block
+
+The severity is `warning`.

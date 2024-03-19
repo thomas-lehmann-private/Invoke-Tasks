@@ -32,9 +32,7 @@ Register-AnalyseTask -Name "AnalyzeFunctionNames" {
     $configuration = $TaskData.analyseConfiguration
     $functionNameRegex = if ($configuration.AnalyzeFunctionNames) {
         $configuration.AnalyzeFunctionNames.FunctionNameRegex
-    } else {
-        "^[A-Z][a-z]+([A-Z][a-z]+)*$"
-    }
+    } else { "^[A-Z][a-z]+([A-Z][a-z]+)*$" }
 
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
@@ -51,22 +49,23 @@ Register-AnalyseTask -Name "AnalyzeFunctionNames" {
         }
     
         if ($tokens.count -ne 2) {
-            $result = $resultPrototyp.Clone()
+            $result = $resultPrototyp.PSObject.Copy()
             $result.Message = "'{0}': should have exactly one dash" -f $function.Name
             $TaskData.analyseResults += $result
+            return
         }
 
         $verb = $tokens[0]
         $name = $tokens[1]
 
         if (-not $(Get-Verb | Where-Object { $_.Verb -eq $verb })) {
-            $result = $resultPrototyp.Clone()
+            $result = $resultPrototyp.PSObject.Copy()
             $result.Message = "'{0}': not using standard verbs (see Get-Verb)" -f $function.Name
             $TaskData.analyseResults += $result
         }
 
         if (-not ($name -cmatch $functionNameRegex)) {
-            $result = $resultPrototyp.Clone()
+            $result = $resultPrototyp.PSObject.Copy()
             $result.Message = "'{0}': not written in camel case after the dash!" -f $function.Name
             $TaskData.analyseResults += $result
         }
