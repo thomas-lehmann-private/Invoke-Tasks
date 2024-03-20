@@ -560,11 +560,13 @@ function Test-Script() {
         # searching for statements
         foreach ($statement in $scriptAst.EndBlock.Statements) {
             $name = $($statement -Split " ")[0] # get name of a command
-            if ($name) {
-                if ($name -notin $AllowedFunctions) { # we allow defined names only
-                    throw "line {0}: {1} allowed only" `
-                        -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
-                }
+            if (-not $name) {
+                continue
+            }
+
+            if ($name -notin $AllowedFunctions) { # we allow defined names only
+                throw "line {0}: {1} allowed only" `
+                    -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
             }
         }
     } else {
