@@ -230,3 +230,24 @@ Initialize-AnalyseTask {
 ```
 
 The severity is `warning`.
+
+## Checking for function nested depth
+
+The default is 3. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeFunctionNestedDepth = @{
+            MaximumDepth = 4
+        }
+        # other settings
+    }
+}
+```
+
+The severity is `warning`.
