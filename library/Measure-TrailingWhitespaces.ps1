@@ -27,6 +27,7 @@ Register-AnalyseTask -Name "AnalyzeTrailingWhitepaces" {
         [String] $PathAndFileName,
         [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
     )
+    $MESSAGE = "Trailing whitespaces after {0}"
     $tokens = @()
     [System.Management.Automation.Language.Parser]::ParseInput( `
         $ScriptBlockAst.Extent.Text, [ref]$tokens, [ref]$null) | Out-Null
@@ -47,7 +48,7 @@ Register-AnalyseTask -Name "AnalyzeTrailingWhitepaces" {
                 File = $PathAndFileName
                 Line = $tokens[$pos].Extent.StartLineNumber
                 Column = $tokens[$pos-1].Extent.EndColumnNumber
-                Message = "Trailing whitespaces after {0}" -f $tokens[$pos-1].Kind
+                Message = $MESSAGE -f $tokens[$pos-1].Kind
                 Severity = 'information'
                 Code = ''
             }
@@ -59,7 +60,7 @@ Register-AnalyseTask -Name "AnalyzeTrailingWhitepaces" {
                     File = $PathAndFileName
                     Line = $tokens[$pos].Extent.StartLineNumber
                     Column = $tokens[$pos-1].Extent.EndColumnNumber
-                    Message = "Trailing whitespaces after {0}" -f $tokens[$pos-1].Kind
+                    Message = $MESSAGE -f $tokens[$pos-1].Kind
                     Severity = 'information'
                     Code = ''
                 }
