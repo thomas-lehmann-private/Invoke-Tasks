@@ -471,6 +471,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-magic-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for magic values
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -663,6 +672,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-magic-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for magic values
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -838,10 +856,29 @@ exist but is not used it will be reported. The severity is <code>warning</code>.
 <p>There is nothing you can adjust. When there are trailing whitespaces it will
 be reported. The severity is <code>information</code>.</p>
 <h2 id="checking-for-function-documentation">Checking for function documentation</h2>
-<p>There is nothing you can adjust. The analyse does report:
-- missing synopsis (at least this should be provided)
-- missing parameter documentation
-- documented parameter that is not in the parameter block</p>
+<p>There is nothing you can adjust. The analyse does report:</p>
+<ul>
+<li>missing synopsis (at least this should be provided)</li>
+<li>missing parameter documentation</li>
+<li>documented parameter that is not in the parameter block</li>
+</ul>
+<p>The severity is <code>warning</code>.</p>
+<h2 id="checking-for-magic-values">Checking for magic values</h2>
+<p>The default is shown in the given example.
+You can change it like following:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="p">}</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="n">AnalyzeMagicValues</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>            <span class="n">Excludes</span> <span class="p">=</span> <span class="p">@(</span><span class="n">0</span><span class="p">,</span> <span class="n">1</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">`&quot;`&quot;</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">`&quot;</span><span class="s2">{0}</span><span class="se">`&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="p">}</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="c"># other settings</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="p">}</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>The severity is <code>warning</code>.</p>
 
 
