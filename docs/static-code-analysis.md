@@ -202,8 +202,31 @@ be reported. The severity is `information`.
 ## Checking for function documentation
 
 There is nothing you can adjust. The analyse does report:
+
 - missing synopsis (at least this should be provided)
 - missing parameter documentation
 - documented parameter that is not in the parameter block
+
+The severity is `warning`.
+
+## Checking for magic values
+
+The default is shown in the given example.
+You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeMagicValues = @{
+            Excludes = @(0, 1, "`"`"", "`"{0}`"")
+        }
+        # other settings
+    }
+}
+```
 
 The severity is `warning`.

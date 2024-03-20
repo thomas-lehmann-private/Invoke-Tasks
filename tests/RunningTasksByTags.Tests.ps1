@@ -31,8 +31,9 @@ Describe "Running tasks by tags" {
             -TaskData $taskData `
             -Quiet
 
-        $taskData.Results | Should -BeExactly @('hello world (first)!', 'hello world (second)!')
-        $taskData.Count | Should -Be 2
+        $expectedValues = @('hello world (first)!', 'hello world (second)!')
+        $taskData.Results | Should -BeExactly $expectedValues
+        $taskData.Count | Should -Be $expectedValues.Count
     }
 
     It "Execute task with tag 'first' with dependency" {
@@ -43,8 +44,9 @@ Describe "Running tasks by tags" {
             -TaskData $taskData `
             -Quiet
 
-        $taskData.Results | Should -BeExactly @('hello world (second)!', 'hello world (first)!')
-        $taskData.Count | Should -Be 2
+        $expectedValues = @('hello world (second)!', 'hello world (first)!')
+        $taskData.Results | Should -BeExactly $expectedValues
+        $taskData.Count | Should -Be $expectedValues.Count
     }
 
     It "Execute task with tag that does not exist" {
