@@ -55,7 +55,8 @@ Register-AnalyseTask -Name "AnalyzeFunctionNestedDepth" {
                     File = $PathAndFileName
                     Line = $block.Extent.StartLineNumber
                     Column = $block.Extent.StartColumnNumber
-                    Message = "Nested depth {0} exceeds {1}" -f $depth, $maximumDepth
+                    Message = "Nested depth in function {0} ({1} exceeds {2}" `
+                        -f $function.Name, $depth, $maximumDepth
                     Severity = 'warning'
                     Code = ""
                 }
