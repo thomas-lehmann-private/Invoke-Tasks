@@ -251,3 +251,24 @@ Initialize-AnalyseTask {
 ```
 
 The severity is `warning`.
+
+## Checking for function return count
+
+The default is 1. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeFunctionReturnCount = @{
+            MaximumCount = 3
+        }
+        # other settings
+    }
+}
+```
+
+The severity is `warning`.
