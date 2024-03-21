@@ -384,6 +384,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-initialize-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      The initialize task
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -426,6 +435,69 @@
   
   <span class="md-ellipsis">
     Command line details
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing-analyse-tasks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Writing analyse tasks
   </span>
   
 
@@ -531,6 +603,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-initialize-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      The initialize task
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -630,6 +711,28 @@ The AST is passed since an AST read one time will be used by several analyse tas
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  506      9 Line too long (exceeds 90) information $allowedFunctions = @(&quot;Register-Task&quot;, &#39;Initialize-AnalyseTask&#39;, &#39;Register-AnalyseT…
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  560     21 Line too long (exceeds 90) information throw &quot;line {0}: {1} allowed only&quot; `…
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>AnalyzeLineLength ./Invoke-Tasks.ps1  561     65 Line too long (exceeds 90) information $AllowedFunctions -Join &quot; and &quot;
+</span></code></pre></div>
+<h2 id="the-initialize-task">The initialize task</h2>
+<p>Enable of analyse tasks is done by providing a call to <code>Initialize-AnalyseTask</code>;
+you can define one only.</p>
+<p>It's important to provide a list of files, otherwise no analyse will be done.
+For each file the AST is read and passed to each analyse task. If you
+don't specify your own settings for analyse tasks the defaults are used as
+documented in <a href="../static-code-analysis/">Static code analysis</a>.</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="nv">$files</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="nv">$files</span> <span class="p">+=</span> <span class="nb">Get-ChildItem</span> <span class="n">-Path</span> <span class="s1">&#39;./library&#39;</span> <span class="n">-Filter</span> <span class="p">*.</span><span class="n">ps1</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nv">$files</span> <span class="p">+=</span> <span class="nb">Get-ChildItem</span> <span class="n">-Path</span> <span class="s1">&#39;./tests&#39;</span> <span class="n">-Filter</span> <span class="p">*.</span><span class="n">ps1</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="nv">$files</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="p">}</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="c"># other settings</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="p">}</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="p">}</span>
 </span></code></pre></div>
 
 
