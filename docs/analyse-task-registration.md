@@ -97,3 +97,31 @@ AnalyzeLineLength ./Invoke-Tasks.ps1  506      9 Line too long (exceeds 90) info
 AnalyzeLineLength ./Invoke-Tasks.ps1  560     21 Line too long (exceeds 90) information throw "line {0}: {1} allowed only" `…
 AnalyzeLineLength ./Invoke-Tasks.ps1  561     65 Line too long (exceeds 90) information $AllowedFunctions -Join " and "
 ```
+
+
+## The initialize task
+
+Enable of analyse tasks is done by providing a call to `Initialize-AnalyseTask`;
+you can define one only.
+
+It's important to provide a list of files, otherwise no analyse will be done.
+For each file the AST is read and passed to each analyse task. If you
+don't specify your own settings for analyse tasks the defaults are used as
+documented in [Static code analysis](static-code-analysis.md).
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+
+    $files = @('./Invoke-Tasks.ps1')
+    $files += Get-ChildItem -Path './library' -Filter *.ps1
+    $files += Get-ChildItem -Path './tests' -Filter *.ps1
+
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = $files
+        }
+        # other settings
+    }
+}
+```

@@ -63,7 +63,7 @@ Register-AnalyseTask -Name "AnalyzeFunctionComLocRatio" {
                 File = $PathAndFileName
                 Line = $function.Extent.StartLineNumber
                 Column = $function.Extent.StartColumnNumber
-                Message = "Too less comments '{0}' ({1}/{2}={3:F2} is below {4})" `
+                Message = "Too less comments in function '{0}' ({1}/{2}={3:F2} is below {4})" `
                     -f $function.Name, $linesComment, $linesFunction, $ratio, $comLocRatio
                 Severity = 'warning'
                 Code = ""

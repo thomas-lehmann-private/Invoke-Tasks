@@ -51,7 +51,7 @@ Register-AnalyseTask -Name "AnalyzeFunctionReturnCount" {
                 File = $PathAndFileName
                 Line = $function.Extent.StartLineNumber
                 Column = $function.Extent.StartColumnNumber
-                Message = "Too many returns in '{0}' ({1} exceeds {2})" `
+                Message = "Too many returns in function '{0}' ({1} exceeds {2})" `
                     -f $function.Name, $returns.Count, $maximumCount
                 Severity = 'warning'
                 Code = ""

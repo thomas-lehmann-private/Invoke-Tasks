@@ -49,7 +49,7 @@ Register-AnalyseTask -Name "AnalyzeFunctionUnusedParameter" {
                     File = $PathAndFileName
                     Line = $_.Group[0].Extent.StartLineNumber
                     Column = $_.Group[0].Extent.StartColumnNumber
-                    Message = "Unused function parameter"
+                    Message = "Unused parameters in function '{0}'" -f $function.Name
                     Severity = 'warning'
                     Code = ""
                 }
