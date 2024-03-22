@@ -498,6 +498,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-cyclomatic-complexity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function cyclomatic complexity
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -780,6 +789,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-function-cyclomatic-complexity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for function cyclomatic complexity
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1011,6 +1029,25 @@ You can change it like following:</p>
 </span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>The severity is <code>warning</code>.</p>
+<h2 id="checking-for-function-cyclomatic-complexity">Checking for function cyclomatic complexity</h2>
+<p>The default is 10. You can change it like following:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>        <span class="p">}</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>        <span class="n">AnalyzeFunctionCyclomaticComplexity</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>            <span class="n">MaximumXomplexity</span> <span class="p">=</span> <span class="n">5</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>        <span class="p">}</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>        <span class="c"># other settings</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="p">}</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>The severity is <code>warning</code>.</p>
+<p>It does count <code>if</code>, <code>elseif</code>, <code>while</code> (with condition to enter loop), <code>for</code> (with condition),
+<code>switch</code> (cases with a break), <code>trap</code> statements and logical operators (and, or, xor). Each
+of them count one.</p>
 
 
 
