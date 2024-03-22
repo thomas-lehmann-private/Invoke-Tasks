@@ -575,6 +575,33 @@ function Test-Script() {
     }
 }
 
+
+<#
+    .SYNOPSIS
+    Searching for analyse ignores in a script
+
+    .PARAMETER ScriptBlockAst
+    The AST of a given script file
+#>
+function Search-AllIgnore() {
+    param([System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst)
+
+    $ignores = @() # list of ignores
+    $tokens = @()  # tokens of the file
+    [System.Management.Automation.Language.Parser]::ParseInput(`
+        $scriptBlockAst.Extent.Text, [ref]$tokens, [ref]$null) | Out-Null
+    foreach ($token in $tokens) { # searching for comments only
+        if ($token.Kind -eq [System.Management.Automation.Language.TokenKind]::Comment) {
+            if ($token.Extent.Text -match " ignore (\w+) on line (\d+) because .*") {
+                $ignores += [PSCustomObject] @{Name = $Matches[1]; Line = [int]$Matches[2]}
+            }
+        }
+    }
+
+    return $ignores # all found ignores
+}
+
+
 # private Invoke-Task context
 $privateContext = @{
     errorFound = $false

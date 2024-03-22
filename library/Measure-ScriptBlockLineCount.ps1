@@ -27,6 +27,8 @@ Register-AnalyseTask -Name "AnalyzeScriptBlockLineCount" {
         [String] $PathAndFileName,
         [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
     )
+    $ignores = Search-AllIgnore $ScriptBlockAst
+
     # get configuration
     $maximumCount = if ($TaskData.analyseConfiguration.AnalyzeScriptBlockLineCount) {
         $TaskData.analyseConfiguration.AnalyzeScriptBlockLineCount.MaximumCount
@@ -41,7 +43,12 @@ Register-AnalyseTask -Name "AnalyzeScriptBlockLineCount" {
         $scriptBlock = $_
         $lineCount = $scriptBlock.Extent.EndLineNumber - $scriptBlock.Extent.StartLineNumber
 
-        if ($lineCount -gt $maximumCount) {
+        $ignorable = [PSCustomObject] @{
+            Name = 'AnalyzeScriptBlockLineCount'; Line = $scriptBlock.Extent.StartLineNumber}
+        $filteredIgnores = $ignores | Where-Object {`
+                $($_.Name -eq $ignorable.Name) -and $($_.Line -eq $ignorable.Line)}
+
+        if ($($lineCount -gt $maximumCount) -and $($filteredIgnores.Count -eq 0)) {
             $TaskData.analyseResults += [PSCustomObject] @{
                 Type = 'AnalyzeScriptBlockLineCount'
                 File = $PathAndFileName
