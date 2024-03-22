@@ -272,3 +272,28 @@ Initialize-AnalyseTask {
 ```
 
 The severity is `warning`.
+
+## Checking for function cyclomatic complexity
+
+The default is 10. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeFunctionCyclomaticComplexity = @{
+            MaximumXomplexity = 5
+        }
+        # other settings
+    }
+}
+```
+
+The severity is `warning`.
+
+It does count `if`, `elseif`, `while` (with condition to enter loop), `for` (with condition),
+`switch` (cases with a break), `trap` statements and logical operators (and, or, xor). Each
+of them count one.
