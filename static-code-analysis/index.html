@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.14">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.15">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.10ba22f1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
       
       
 
@@ -507,6 +507,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-script-block-comloc-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for script block COM/LOC ratio
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -798,6 +807,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#checking-for-script-block-comloc-ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking for script block COM/LOC ratio
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1048,6 +1066,23 @@ You can change it like following:</p>
 <p>It does count <code>if</code>, <code>elseif</code>, <code>while</code> (with condition to enter loop), <code>for</code> (with condition),
 <code>switch</code> (cases with a break), <code>trap</code> statements and logical operators (and, or, xor). Each
 of them count one.</p>
+<h2 id="checking-for-script-block-comloc-ratio">Checking for script block COM/LOC ratio</h2>
+<p>The default ratio is 0.25 and default minimum lines are 3. You can change it like following:</p>
+<p><div class="language-powershell highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">Initialize-AnalyseTask</span> <span class="p">{</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="k">param</span> <span class="p">(</span><span class="no">[hashtable]</span> <span class="nv">$TaskData</span><span class="p">)</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="nv">$TaskData</span><span class="p">.</span><span class="n">analyseConfiguration</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>        <span class="n">Global</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>            <span class="n">AnalyzePathAndFileNames</span> <span class="p">=</span> <span class="p">@(</span><span class="s1">&#39;./Invoke-Tasks.ps1&#39;</span><span class="p">)</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>        <span class="p">}</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="n">AnalyzeScriptBlockComLocRatio</span> <span class="p">=</span> <span class="p">@{</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>            <span class="n">Ratio</span> <span class="p">=</span> <span class="n">0</span><span class="p">.</span><span class="n">5</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>            <span class="n">MinimumLines</span> <span class="p">=</span> <span class="n">5</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>        <span class="p">}</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="c"># other settings</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>    <span class="p">}</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="p">}</span>
+</span></code></pre></div>
+The severity is <code>warning</code>. The behavior is pretty the same as for the function (see example there)</p>
 
 
 
