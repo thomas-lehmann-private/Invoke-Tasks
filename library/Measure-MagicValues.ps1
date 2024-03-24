@@ -29,14 +29,14 @@ Register-AnalyseTask -Name "AnalyzeMagicValues" {
     )
     # get configuration
     $excludes = if ($TaskData.analyseConfiguration.AnalyzeMagicValues) {
-        $TaskData.analyseConfiguration.AnalyzeMagicValues.Excludes
-    } else { @(0, 1, "`"`"", "`"{0}`"") }
-
+        $TaskData.analyseConfiguration.AnalyzeMagicValues.Excludes # custom
+    } else { @(0, 1, "`"`"", "`"{0}`"") } # default
+    # get all tokens of the file
     $statistics = @{}
     $tokens = @()
     [System.Management.Automation.Language.Parser]::ParseInput(`
         $ScriptBlockAst.Extent.Text, [ref]$tokens, [ref]$null) | Out-Null
-
+    # filtering for following token kinds
     $magicValuesKinds = @(
         [System.Management.Automation.Language.TokenKind]::Number,
         [System.Management.Automation.Language.TokenKind]::StringLiteratal,
@@ -44,29 +44,29 @@ Register-AnalyseTask -Name "AnalyzeMagicValues" {
     )
     
     foreach ($token in $tokens) {
-        if ($token.Kind -in $magicValuesKinds) {
-            if ($token.Extent.Text -in $excludes) {
+        if ($token.Kind -in $magicValuesKinds) { # searched token kind?
+            if ($token.Extent.Text -in $excludes) { # excluded?
                 continue
             }
 
             if ($statistics.ContainsKey($token.Extent.Text)) {
-                $statistics[$token.Extent.Text].Count += 1
+                $statistics[$token.Extent.Text].Count += 1 # is one of those magic values
             } else {
-                $statistics[$token.Extent.Text] = [PSCustomObject] @{Token=$token; Count=1}
+                $statistics[$token.Extent.Text] = [PSCustomObject] @{Token=$token; Count=1} # first
             }
         }
     }
 
     foreach ($item in $statistics.GetEnumerator()) {
-        if ($item.Value.Count -gt 1) {
+        if ($item.Value.Count -gt 1) { # if a magic value appears more than once
             $TaskData.analyseResults += [PSCustomObject] @{
-                Type = 'AnalyzeMagicValues'
-                File = $PathAndFileName
-                Line = $item.Value.Token.Extent.StartLineNumber
-                Column = $item.Value.Token.Extent.StartColumnNumber
+                Type = 'AnalyzeMagicValues'                         # type of analyse
+                File = $PathAndFileName                             # file that has been analyzed
+                Line = $item.Value.Token.Extent.StartLineNumber     # line of the issue
+                Column = $item.Value.Token.Extent.StartColumnNumber # column of the issue
                 Message = "Magic value: ({0} used more than once)" -f $item.Value.Token.Kind
-                Severity = 'warning'
-                Code = $item.Value.Token.Extent.Text
+                Severity = 'warning'                                # severity of the issue
+                Code = $item.Value.Token.Extent.Text                # magic value
             }
         }
     }

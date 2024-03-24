@@ -31,12 +31,12 @@ Register-AnalyseTask -Name "AnalyzeFunctionCyclomaticComplexity" {
     # get configuration
     $maximumComplexity = if ($TaskData.analyseConfiguration.AnalyzeFunctionCyclomaticComplexity) {
         $TaskData.analyseConfiguration.AnalyzeFunctionCyclomaticComplexity.MaximumComplexity
-    } else { 10 }
+    } else { 10 } # default value
 
-    $logicalOperators = @(
-        [System.Management.Automation.Language.TokenKind]::And,
-        [System.Management.Automation.Language.TokenKind]::Or,
-        [System.Management.Automation.Language.TokenKind]::Xor
+    $logicalOperators = @(                                      # list of logical operators
+        [System.Management.Automation.Language.TokenKind]::And, # 'and' operator
+        [System.Management.Automation.Language.TokenKind]::Or,  # 'or' operator
+        [System.Management.Automation.Language.TokenKind]::Xor  # 'xor' operator
     )
 
     $mainPredicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
@@ -72,14 +72,14 @@ Register-AnalyseTask -Name "AnalyzeFunctionCyclomaticComplexity" {
 
         if ($complexity -gt $maximumComplexity) {
             $TaskData.analyseResults += [PSCustomObject] @{
-                Type = 'AnalyzeFunctionCyclomaticComplexity'
-                File = $PathAndFileName
+                Type = 'AnalyzeFunctionCyclomaticComplexity' # type of analyse
+                File = $PathAndFileName                      # file that has been analyzed
                 Line = $function.Extent.StartLineNumber
                 Column = $function.Extent.StartColumnNumber
                 Message = "Too complex function '{0}' ({1} exceeds {2})" `
                     -f $function.Name, $complexity, $maximumComplexity
-                Severity = 'warning'
-                Code = ""
+                Severity = 'warning'                         # severity is warning
+                Code = ""                                    # code is not used here
             }
         }
     }

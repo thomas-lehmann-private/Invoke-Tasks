@@ -29,23 +29,23 @@ Register-AnalyseTask -Name "AnalyzeFunctionCount" {
     )
     # get configuration
     $maximumCount = if ($TaskData.analyseConfiguration.AnalyzeFunctionCount) {
-        $TaskData.analyseConfiguration.AnalyzeFunctionCount.MaximumCount
+        $TaskData.analyseConfiguration.AnalyzeFunctionCount.MaximumCount # custom value
     } else {
-        20
+        20 # default value
     }
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
 
     if ($functions.Count -gt $maximumCount) {
         $TaskData.analyseResults += [PSCustomObject] @{
-            Type = 'AnalyzeFunctionCount'
-            File = $PathAndFileName
-            Line = 1
-            Column = 1
+            Type = 'AnalyzeFunctionCount'  # type of analyse
+            File = $PathAndFileName        # file file that has been analyzed
+            Line = 1                       # for a file it always starts at line 1
+            Column = 1                     # for a file it always starts at column 1
             Message = "Too many functions ({0} exceeds {1})" `
                 -f $functions.Count, $maximumCount
-            Severity = 'information'
-            Code = ""
+            Severity = 'information'       # severity is information
+            Code = ""                      # code is not used here
         }
     }
 }

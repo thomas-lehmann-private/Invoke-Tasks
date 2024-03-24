@@ -1,9 +1,9 @@
 Initialize-AnalyseTask {
     param ([hashtable] $TaskData)
-
+    # define files to analyze
     $files = @($PSScriptRoot + '/TooManyLinesInBlockIgnored.ps1')
     $TaskData.analyseConfiguration = @{
-        Global = @{
+        Global = @{ # adjust files to analyze
             AnalyzePathAndFileNames = $files
         }
     }

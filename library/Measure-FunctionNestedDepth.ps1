@@ -30,35 +30,35 @@ Register-AnalyseTask -Name "AnalyzeFunctionNestedDepth" {
 
     # get configuration
     $maximumDepth = if ($TaskData.analyseConfiguration.AnalyzeFunctionNestedDepth) {
-        $TaskData.analyseConfiguration.AnalyzeFunctionNestedDepth.MaximumDepth
-    } else { 3 }
+        $TaskData.analyseConfiguration.AnalyzeFunctionNestedDepth.MaximumDepth # custom value
+    } else { 3 } # default value
 
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
     $functions | ForEach-Object {
-        $function = $_
+        $function = $_ # function ast
         $blockPredicate = {$args[0] -is [System.Management.Automation.Language.StatementBlockAst]}
         $blocks = $function.FindAll($blockPredicate, $true)
         foreach ($block in $blocks) {
-            $parent = $block.Parent
-            $depth = 0
+            $parent = $block.Parent # parent of this block
+            $depth = 0 # initial depth
             while ($parent.Extent.StartLineNumber -ne $function.Extent.StartLineNumber) {
                 if ($parent -is [System.Management.Automation.Language.StatementBlockAst]) {
-                    $depth += 1
+                    $depth += 1 # one more depth found
                 }
-                $parent = $parent.Parent
+                $parent = $parent.Parent # walking up
             }
 
             if ($depth -gt $maximumDepth) {
                 $TaskData.analyseResults += [PSCustomObject] @{
-                    Type = 'AnalyzeFunctionNestedDepth'
-                    File = $PathAndFileName
-                    Line = $block.Extent.StartLineNumber
-                    Column = $block.Extent.StartColumnNumber
+                    Type = 'AnalyzeFunctionNestedDepth'       # type of analyse
+                    File = $PathAndFileName                   # file that has been analyzed
+                    Line = $block.Extent.StartLineNumber      # line of the issue
+                    Column = $block.Extent.StartColumnNumber  # column of the issue
                     Message = "Nested depth in function {0} ({1} exceeds {2}" `
                         -f $function.Name, $depth, $maximumDepth
-                    Severity = 'warning'
-                    Code = ""
+                    Severity = 'warning'                      # severity of the issue
+                    Code = ""                                 # code is not used here
                 }
             }
         }

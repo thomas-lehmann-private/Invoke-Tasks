@@ -37,14 +37,14 @@ Register-AnalyseTask -Name "AnalyzeLineLength" {
     $results = $ScriptBlockAst.FindAll($predicate, $true) | ForEach-Object {
         if ($_.Extent.EndColumnNumber -gt $maximumLength) {
             [PSCustomObject] @{
-                Type = 'AnalyzeLineLength'
-                File = $PathAndFileName
-                Line = $_.Extent.StartLineNumber
-                Column = $_.Extent.StartColumnNumber
+                Type = 'AnalyzeLineLength'            # type of analyse
+                File = $PathAndFileName               # file that has been analyzed
+                Line = $_.Extent.StartLineNumber      # line of the issue
+                Column = $_.Extent.StartColumnNumber  # column of the issue
                 Message = "Line too long ({0} exceeds {0})" `
                     -f $_.Extent.EndColumnNumber, $maximumLength
-                Severity = 'information'
-                Code = $_.Extent.Text
+                Severity = 'information'              # severity of the issue
+                Code = $_.Extent.Text                 # statement that exeeds line length
             }
         }
     }

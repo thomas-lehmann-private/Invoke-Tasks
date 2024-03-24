@@ -24,18 +24,18 @@
 Register-Task -Name "Static code analysis" -Tag "check-code" {
     param ([hashtable] $TaskData)
 
-    $paths = $TaskData.Parameters.Paths
+    $paths = $TaskData.Parameters.Paths # list of files to analze
     foreach ($path in $paths) {
         Write-Message ("Checking code for {0}" -f $path)
-        $results = Invoke-ScriptAnalyzer $path -Recurse
-        $results = $results | Where-Object {
+        $results = Invoke-ScriptAnalyzer $path -Recurse # run PSScriptAnalyzer
+        $results = $results | Where-Object { # filter results for disturbing (most false positive)
             ($_.RuleName -ne 'PSReviewUnusedParameter') `
             -and `
             ($_.RuleName -ne 'PSUseDeclaredVarsMoreThanAssignments')
         }
 
-        $results | Format-Table
-        if ($results.Count -gt 0) {
+        $results | Format-Table # print results
+        if ($results.Count -gt 0) { # throw an error if there are issued
             throw "ScriptAnalyzer has found issues!"
         }
     }

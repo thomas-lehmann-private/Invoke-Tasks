@@ -1,11 +1,11 @@
 Initialize-AnalyseTask {
     param ([hashtable] $TaskData)
     $TaskData.analyseConfiguration = @{
-        Global = @{
+        Global = @{ # configure files to analyze
             AnalyzePathAndFileNames = @('./tests/taskfiles/OneTaskWithAnalyse.ps1')
         }
         AnalyzeLineLength = @{
-            MaximumLength = 60
+            MaximumLength = 60 # overwrite default
         }
     }
 }
@@ -16,13 +16,13 @@ Register-AnalyseTask -Name "Analyze Anything" {
         [String] $PathAndFileName,
         [System.Management.Automation.Language.ScriptBlockAst] $ScriptBlockAst
     )
-
+    # adding one issue
     $TaskData.analyseResults += [PSCustomObject] @{
-        File = $PathAndFileName
-        Line = 1
-        Column = 1
-        Message = "Test message 1"
-        Severity = 'test'
+        File = $PathAndFileName    # file that has been analyzed
+        Line = 1                   # line of the issue
+        Column = 1                 # column of the issue
+        Message = "Test message 1" # test message
+        Severity = 'test'          # severity of the issue
         Code = "no code"
     }
 }
@@ -35,11 +35,11 @@ Register-AnalyseTask -Name "Analyze Anything" {
     )
 
     $TaskData.analyseResults += [PSCustomObject] @{
-        File = $PathAndFileName
-        Line = 1
-        Column = 1
-        Message = "Test message 2"
-        Severity = 'test'
+        File = $PathAndFileName     # file that has been analyzed
+        Line = 1                    # line of the issue
+        Column = 1                  # column of the issue
+        Message = "Test message 2"  # test message
+        Severity = 'test'           # severity of the issue
         Code = "no code"
     }
 }

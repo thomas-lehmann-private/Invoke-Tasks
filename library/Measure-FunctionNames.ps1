@@ -31,27 +31,27 @@ Register-AnalyseTask -Name "AnalyzeFunctionNames" {
     # get configuration
     $configuration = $TaskData.analyseConfiguration
     $functionNameRegex = if ($configuration.AnalyzeFunctionNames) {
-        $configuration.AnalyzeFunctionNames.FunctionNameRegex
-    } else { "^[A-Z][a-z]+([A-Z][a-z]+)*$" }
+        $configuration.AnalyzeFunctionNames.FunctionNameRegex # custom value
+    } else { "^[A-Z][a-z]+([A-Z][a-z]+)*$" } # default value
 
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
 
     $functions | ForEach-Object {
-        $function = $_
-        $tokens = $function.Name -Split '-'
+        $function = $_ # function ast
+        $tokens = $function.Name -Split '-' # tokenize of name
 
-        $resultPrototyp = [PSCustomObject] @{
+        $resultPrototyp = [PSCustomObject] @{ # template for an issue
             Type = 'AnalyzeFunctionName'; File = $PathAndFileName
             Line = $function.Extent.StartLineNumber
             Column = $function.Extent.StartColumnNumber
             Message = ""; Severity = 'warning'; Code = ""
         }
     
-        if ($tokens.count -ne 2) {
-            $result = $resultPrototyp.PSObject.Copy()
+        if ($tokens.count -ne 2) { # name does not have exactly one dash?
+            $result = $resultPrototyp.PSObject.Copy() # clone of prototype issue
             $result.Message = "'{0}': should have exactly one dash" -f $function.Name
-            $TaskData.analyseResults += $result
+            $TaskData.analyseResults += $result       # adding issue
             return
         }
 
@@ -61,13 +61,13 @@ Register-AnalyseTask -Name "AnalyzeFunctionNames" {
         if (-not $(Get-Verb | Where-Object { $_.Verb -eq $verb })) {
             $result = $resultPrototyp.PSObject.Copy()
             $result.Message = "'{0}': not using standard verbs (see Get-Verb)" -f $function.Name
-            $TaskData.analyseResults += $result
+            $TaskData.analyseResults += $result # adding issue
         }
 
         if (-not ($name -cmatch $functionNameRegex)) {
-            $result = $resultPrototyp.PSObject.Copy()
+            $result = $resultPrototyp.PSObject.Copy() # clone of prototype issue
             $result.Message = "'{0}': not written in camel case after the dash!" -f $function.Name
-            $TaskData.analyseResults += $result
+            $TaskData.analyseResults += $result       # adding issue
         }
     }
 }

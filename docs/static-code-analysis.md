@@ -297,3 +297,24 @@ The severity is `warning`.
 It does count `if`, `elseif`, `while` (with condition to enter loop), `for` (with condition),
 `switch` (cases with a break), `trap` statements and logical operators (and, or, xor). Each
 of them count one.
+
+## Checking for script block COM/LOC ratio
+
+The default ratio is 0.25 and default minimum lines are 3. You can change it like following:
+
+```powershell
+Initialize-AnalyseTask {
+    param ([hashtable] $TaskData)
+    $TaskData.analyseConfiguration = @{
+        Global = @{
+            AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
+        }
+        AnalyzeScriptBlockComLocRatio = @{
+            Ratio = 0.5
+            MinimumLines = 5
+        }
+        # other settings
+    }
+}
+```
+The severity is `warning`. The behavior is pretty the same as for the function (see example there)

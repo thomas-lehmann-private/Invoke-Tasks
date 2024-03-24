@@ -31,28 +31,26 @@ Register-AnalyseTask -Name "AnalyzeFunctionParameterCount" {
     # get configuration
     $configuration = $TaskData.analyseConfiguration
     $maximumCount = if ($configuration.AnalyzeFunctionParameterCount) {
-            $configuration.AnalyzeFunctionParameterCount.MaximumCount
-    } else {
-        5
-    }
+            $configuration.AnalyzeFunctionParameterCount.MaximumCount # custom value
+    } else { 5 } # default value
 
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
 
     $functions | ForEach-Object {
-        $function = $_
+        $function = $_ # function ast
         $parameters = $function.Body.ParamBlock.Parameters
 
         if ($parameters.Count -gt $maximumCount) {
             $TaskData.analyseResults += [PSCustomObject] @{
-                Type = 'AnalyzeFunctionParameterCount'
-                File = $PathAndFileName
-                Line = $function.Extent.StartLineNumber
-                Column = $function.Extent.StartColumnNumber
+                Type = 'AnalyzeFunctionParameterCount'       # type of analyse
+                File = $PathAndFileName                      # file that has been analyzed
+                Line = $function.Extent.StartLineNumber      # line of the issue
+                Column = $function.Extent.StartColumnNumber  # column of the issue
                 Message = "Too many parameters for function '{0}' ({1} exceeds {2})" `
                     -f $function.Name, $parameters.Count, $maximumCount
-                Severity = 'warning'
-                Code = ""
+                Severity = 'warning'                         # severity of the issue
+                Code = ""                                    # code is not used here
             }
         }
     }

@@ -29,28 +29,28 @@ Register-AnalyseTask -Name "AnalyzeFunctionLineCount" {
     )
     # get configuration
     $maximumCount = if ($TaskData.analyseConfiguration.AnalyzeFunctionLineCount) {
-        $TaskData.analyseConfiguration.AnalyzeFunctionLineCount.MaximumCount
+        $TaskData.analyseConfiguration.AnalyzeFunctionLineCount.MaximumCount # custom value
     } else {
-        50
+        50 # default value
     }
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
 
     $functions | ForEach-Object {
-        $function = $_
+        $function = $_ # function ast
 
         $lineCount = $function.Extent.EndLineNumber - $function.Extent.StartLineNumber
 
         if ($lineCount -gt $maximumCount) {
             $TaskData.analyseResults += [PSCustomObject] @{
-                Type = 'AnalyzeFunctionLineCount'
-                File = $PathAndFileName
-                Line = $function.Extent.StartLineNumber
-                Column = $function.Extent.StartColumnNumber
+                Type = 'AnalyzeFunctionLineCount'            # type of analyse
+                File = $PathAndFileName                      # file that has been analyzed
+                Line = $function.Extent.StartLineNumber      # line of issue
+                Column = $function.Extent.StartColumnNumber  # column of issue
                 Message = "Too many lines in function '{0}' ({1} exceeds {2})" `
                     -f $function.Name, $lineCount, $maximumCount
-                Severity = 'warning'
-                Code = ""
+                Severity = 'warning'                         # severity is warning
+                Code = ""                                    # code is not used here
             }
         }
     }

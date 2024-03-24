@@ -31,43 +31,43 @@ Register-AnalyseTask -Name "AnalyzeFunctionLineCount" {
     $functions = $ScriptBlockAst.FindAll(
         {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}, $true)
     $functions | ForEach-Object {
-        $function = $_
-        $template = [PSCustomObject] @{
+        $function = $_ # function ast
+        $template = [PSCustomObject] @{ # template for a message
             Type = 'AnalyzeFunctionDocumentation'; File = $PathAndFileName
             Line = $function.Extent.StartLineNumber
             Column = $function.Extent.StartColumnNumber
             Message = "Missing function documention"; Severity = 'warning'; Code = ""
         }
 
-        $helpContent =  $function.GetHelpContent()
+        $helpContent =  $function.GetHelpContent() # help details of a function
         $parameterNames = $function.Body.ParamBlock.Parameters `
             | ForEach-Object { $_.Name -replace "\$", "" }
-
+        # if there is not any help an issue will be added
         if (-not $helpContent) { $TaskData.analyseResults += $template.Clone() }
-
+        # if .SYNOPSIS is missing an issue will be added
         if (-not $helpContent.SYNOPSIS) {
-            $result = $template.PSObject.Copy()
+            $result = $template.PSObject.Copy() # clone defaults
             $result.Message = "Missing Synopsis"
-            $TaskData.analyseResults += $result
+            $TaskData.analyseResults += $result # adding issue
         }
-
+        # get names of parameters in documentation
         $documentedParameterNames = $helpContent.Parameters.GetEnumerator() `
             | ForEach-Object { $_.Key }
-
+        # add an issue for each documented parameter that does not exist
         foreach ($documentedParamName in $documentedParameterNames) {
             if ($documentedParamName -notin $parameterNames) {
-                $result = $template.PSObject.Copy()
+                $result = $template.PSObject.Copy() # clone defaults
                 $result.Message = "Documented Parameter '{0}' not in parameter block" `
                     -f $documentedParamName
-                $TaskData.analyseResults += $result
+                $TaskData.analyseResults += $result # adding issue
             }
         }
-
+        # add an issue for each parameter that is not documented
         foreach ($parameterName in $parameterNames) {
             if ($parameterName -notin $documentedParameterNames) {
-                $result = $template.PSObject.Copy()
+                $result = $template.PSObject.Copy() # clone defaults
                 $result.Message = "Parameter '{0}' not documented" -f $parameterName
-                $TaskData.analyseResults += $result
+                $TaskData.analyseResults += $result # adding issue
             }
         }
     }
