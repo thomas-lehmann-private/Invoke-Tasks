@@ -29,23 +29,23 @@ Register-AnalyseTask -Name "AnalyzeLineCount" {
     )
     # get configuration
     $maximumCount = if ($TaskData.analyseConfiguration.AnalyzeLineCount) {
-        $TaskData.analyseConfiguration.AnalyzeLineCount.MaximumCount
+        $TaskData.analyseConfiguration.AnalyzeLineCount.MaximumCount # custom value
     } else {
-        1000
+        1000 # default value
     }
 
     $lines = $ScriptBlockAst.Extent.EndLineNumber - $ScriptBlockAst.Extent.StartLineNumber
 
     if ($lines -gt $maximumCount) {
         $TaskData.analyseResults += [PSCustomObject] @{
-            Type = 'AnalyzeLineCount'
-            File = $PathAndFileName
-            Line = 1
-            Column = 1
+            Type = 'AnalyzeLineCount'      # type of analyse
+            File = $PathAndFileName        # file that is analyzed
+            Line = 1                       # for a file the start is always at line 1
+            Column = 1                     # for a file the start is always at column 1
             Message = "Too many lines in file ({0} exceeds {1})" `
                 -f $lines, $maximumCount
-            Severity = 'information'
-            Code = ""
+            Severity = 'information'       # severity is 'information'
+            Code = ""                      # code is not used here
         }
     }
 }

@@ -168,7 +168,7 @@ function Register-AnalyseTask() {
     )
 
     # same elements cannot be added twice
-    if (-not $($global:analyseTasks | Where-Object{ $_.Name -eq $Name})) {
+    if (-not $($global:analyseTasks | Where-Object{$_.Name -eq $Name})) {
         $global:analyseTasks += [PSCustomObject] @{
             Name = $Name                # name of the analyse task
             ScriptBlock = $ScriptBlock  # the analyse code (AST)

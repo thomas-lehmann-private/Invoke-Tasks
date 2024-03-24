@@ -30,8 +30,8 @@ Register-AnalyseTask -Name "AnalyzeFunctionReturnCount" {
 
     # get configuration
     $maximumCount = if ($TaskData.analyseConfiguration.AnalyzeFunctionReturnCount) {
-        $TaskData.analyseConfiguration.AnalyzeFunctionReturnCount.MaximumCount
-    } else { 1 }
+        $TaskData.analyseConfiguration.AnalyzeFunctionReturnCount.MaximumCount # custom value
+    } else { 1 } # default value
 
     $predicate = {$args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]}
     $functions = $ScriptBlockAst.FindAll($predicate, $true)
@@ -47,14 +47,14 @@ Register-AnalyseTask -Name "AnalyzeFunctionReturnCount" {
 
         if ($returns.Count -gt $maximumCount) {
             $TaskData.analyseResults += [PSCustomObject] @{
-                Type = 'AnalyzeFunctionReturnCount'
-                File = $PathAndFileName
-                Line = $function.Extent.StartLineNumber
-                Column = $function.Extent.StartColumnNumber
+                Type = 'AnalyzeFunctionReturnCount'           # type of analyse
+                File = $PathAndFileName                       # file that has been analyzed
+                Line = $function.Extent.StartLineNumber       # line of the issue
+                Column = $function.Extent.StartColumnNumber   # column of the issue
                 Message = "Too many returns in function '{0}' ({1} exceeds {2})" `
                     -f $function.Name, $returns.Count, $maximumCount
-                Severity = 'warning'
-                Code = ""
+                Severity = 'warning'                          # severity of the issue
+                Code = ""                                     # code is not used here
             }
         }
     }

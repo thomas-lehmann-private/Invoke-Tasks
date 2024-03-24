@@ -44,25 +44,25 @@ Register-AnalyseTask -Name "AnalyzeTrailingWhitepaces" {
         # between last token and newline (on same line) are spaces?
         if ($tokens[$pos].Extent.StartColumnNumber - $tokens[$pos-1].Extent.EndColumnNumber) {
             $TaskData.analyseResults += [PSCustomObject] @{
-                Type = 'AnalyzeTrailingWhitespaces'
-                File = $PathAndFileName
-                Line = $tokens[$pos].Extent.StartLineNumber
-                Column = $tokens[$pos-1].Extent.EndColumnNumber
+                Type = 'AnalyzeTrailingWhitespaces'             # type of analyse
+                File = $PathAndFileName                         # file that has been analyzed
+                Line = $tokens[$pos].Extent.StartLineNumber     # line of the issue
+                Column = $tokens[$pos-1].Extent.EndColumnNumber # column of the issue
                 Message = $MESSAGE -f $tokens[$pos-1].Kind
-                Severity = 'information'
-                Code = ''
+                Severity = 'information'                        # severity of the issue
+                Code = ''                                       # code is not used here
             }
         } elseif ($tokens[$pos-1].Kind `
             -eq [System.Management.Automation.Language.TokenKind]::Comment) {
             if ($tokens[$pos-1].Extent.Text.EndsWith(' ')) {
                 $TaskData.analyseResults += [PSCustomObject] @{
-                    Type = 'AnalyzeTrailingWhitespaces'
-                    File = $PathAndFileName
-                    Line = $tokens[$pos].Extent.StartLineNumber
-                    Column = $tokens[$pos-1].Extent.EndColumnNumber
+                    Type = 'AnalyzeTrailingWhitespaces'             # type of analyse
+                    File = $PathAndFileName                         # file that has been analyzed
+                    Line = $tokens[$pos].Extent.StartLineNumber     # line of the issue
+                    Column = $tokens[$pos-1].Extent.EndColumnNumber # column of the issue
                     Message = $MESSAGE -f $tokens[$pos-1].Kind
-                    Severity = 'information'
-                    Code = ''
+                    Severity = 'information'                        # severity of the issue
+                    Code = ''                                       # code is not used here
                 }
             }
         }
