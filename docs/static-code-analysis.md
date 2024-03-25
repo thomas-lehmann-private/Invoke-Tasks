@@ -318,3 +318,8 @@ Initialize-AnalyseTask {
 }
 ```
 The severity is `warning`. The behavior is pretty the same as for the function (see example there)
+
+## Checking for empty script blocks
+
+There is nothing you can adjust. When there is an empty script block it will
+be reported. The severity is `warning`.
