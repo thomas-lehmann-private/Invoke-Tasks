@@ -41,7 +41,7 @@ Register-AnalyseTask -Name "AnalyzeFunctionNestedDepth" {
         $blocks = $function.FindAll($blockPredicate, $true)
         foreach ($block in $blocks) {
             $parent = $block.Parent # parent of this block
-            $depth = 0 # initial depth
+            $depth = 1 # initial depth
             while ($parent.Extent.StartLineNumber -ne $function.Extent.StartLineNumber) {
                 if ($parent -is [System.Management.Automation.Language.StatementBlockAst]) {
                     $depth += 1 # one more depth found

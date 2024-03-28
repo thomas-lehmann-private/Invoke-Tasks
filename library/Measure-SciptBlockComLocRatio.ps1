@@ -51,6 +51,8 @@ Register-AnalyseTask -Name "AnalyzeScriptBlockComLocRatio" {
 
             [System.Management.Automation.Language.Parser]::ParseInput(`
                 $block.Extent.Text, [ref]$tokens, [ref]$null) | Out-Null
+            # ignore outer brackets
+            $tokens = $tokens[1..($tokens.Count-2)]
             foreach ($token in $tokens) {
                 if ($token.Kind -eq [System.Management.Automation.Language.TokenKind]::Comment) {
                     $linesComment += 1 # one more lines of comments
@@ -61,11 +63,16 @@ Register-AnalyseTask -Name "AnalyzeScriptBlockComLocRatio" {
                     }
                     $tokenCount = 0
                 } else {
-                    $tokenCount += 1
+                    $tokenCount += 1 # there is code
                 }
             }
+
+            if ($tokenCount -gt 0) {
+                $linesBlock += 1 # happens when closing bracket is on same line as last code
+            }
+
             $ratio = $linesComment / $linesBlock # calculate the ratio
-            if (($ratio -lt $comLocRatio) -and ($linesBlock -ge $minimumLines)) {
+            if ($($ratio -lt $comLocRatio) -and $($linesBlock -ge $minimumLines)) {
                 $TaskData.analyseResults += [PSCustomObject] @{
                     Type = 'AnalyzeScriptBlockComLocRatio'   # type of analyse
                     File = $PathAndFileName                  # file that has been analyzed

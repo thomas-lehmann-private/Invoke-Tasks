@@ -1,8 +1,8 @@
-Describe "Checking for ignores" {
+Describe "Checking for ScriptBlockLineCount" {
     It "AnalyzeScriptBlockLineCount normal" {
         $taskData = @{} # initial task data
         ./Invoke-Tasks.ps1 `
-            -TaskFile tests/taskfiles/TooManyLinesInBlock.ps1 `
+            -TaskFile tests/taskfiles/static-code-analysis/TooManyLinesInBlock.ps1 `
             -TaskData $taskData `
             -TaskLibraryPath ./library `
             -Quiet # hide tool output
@@ -13,7 +13,7 @@ Describe "Checking for ignores" {
     It "AnalyzeScriptBlockLineCount ignored" {
         $taskData = @{} # initial task data
         ./Invoke-Tasks.ps1 `
-            -TaskFile tests/taskfiles/TooManyLinesInBlockIgnored.ps1 `
+            -TaskFile tests/taskfiles/static-code-analysis/TooManyLinesInBlockIgnored.ps1 `
             -TaskData $taskData `
             -TaskLibraryPath ./library `
             -Quiet # hide tool output
