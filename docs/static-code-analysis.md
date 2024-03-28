@@ -285,7 +285,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeFunctionCyclomaticComplexity = @{
-            MaximumXomplexity = 5
+            MaximumComplexity = 5
         }
         # other settings
     }
@@ -310,7 +310,7 @@ Initialize-AnalyseTask {
             AnalyzePathAndFileNames = @('./Invoke-Tasks.ps1')
         }
         AnalyzeScriptBlockCyclomaticComplexity = @{
-            MaximumXomplexity = 5
+            MaximumComplexity = 5
         }
         # other settings
     }
