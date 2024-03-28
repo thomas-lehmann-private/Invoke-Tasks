@@ -415,22 +415,23 @@ function Invoke-AllAnalyseTask() {
     # analyse tasks are executed if given and checkmode is not active
     if (($global:analyseTasks.Count -gt 0) -and (-not $TaskData.privateContext.checkMode)) {
         # of course: initialize task must be given
-        if ($global:initializeAnalyseTasks) {
-            foreach ($analyseTask in $global:analyseTasks) {
-                # running initialize task when configuration is not yet given
-                if (-not $TaskData.analyseConfiguration) {
-                    & $global:initializeAnalyseTasks $TaskData
-                }
-                # running analyse task for each register path and filename
-                $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
-                foreach ($pathAndFileName in $fileNames) {
-                    # parsing file to get AST to pass to each analyse function
-                    $content = Get-Content $pathAndFileName -Raw
-                    $scriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput(`
-                        $content, [ref]$null, [ref]$null)
-                    # running concrete analyse function
-                    & $analyseTask.ScriptBlock $TaskData $pathAndFileName $scriptBlockAst
-                }
+        if (-not $global:initializeAnalyseTasks) {
+            return
+        }
+        foreach ($analyseTask in $global:analyseTasks) {
+            # running initialize task when configuration is not yet given
+            if (-not $TaskData.analyseConfiguration) {
+                & $global:initializeAnalyseTasks $TaskData
+            }
+            # running analyse task for each register path and filename
+            $fileNames = $TaskData.analyseConfiguration.Global.AnalyzePathAndFileNames
+            foreach ($pathAndFileName in $fileNames) {
+                # parsing file to get AST to pass to each analyse function
+                $content = Get-Content $pathAndFileName -Raw
+                $scriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput(`
+                    $content, [ref]$null, [ref]$null)
+                # running concrete analyse function
+                & $analyseTask.ScriptBlock $TaskData $pathAndFileName $scriptBlockAst
             }
         }
     }
@@ -523,7 +524,7 @@ function Initialize-Library() {
             # is a folder
             $files = Get-ChildItem -Path $TaskLibraryPath -Filter *.ps1
             foreach ($file in $files) { # intention: registering all tasks for each library file
-                Write-Message ("  ... loading Library File {0}" -f $TaskLibraryPath)
+                Write-Message ("  ... loading Library File {0}" -f $file)
                 Test-Script -Path $file -AllowedFunctions $allowedFunctions
                 . $file # registering all library task
                 Write-Message("   ...... done.")
@@ -553,25 +554,25 @@ function Test-Script() {
         [String[]] $AllowedFunctions
     )
 
-    if (Test-Path -Path $Path) {
-        $fileContent = Get-Content $Path -Raw # loading content of script
-        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput( # parsing script
-            $fileContent, [ref]$null, [ref]$null)
-        # searching for statements
-        foreach ($statement in $scriptAst.EndBlock.Statements) {
-            $name = $($statement -Split " ")[0] # get name of a command
-            if (-not $name) {
-                continue
-            }
-
-            if ($name -notin $AllowedFunctions) { # we allow defined names only
-                throw "line {0}: {1} allowed only" `
-                    -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
-            }
-        }
-    } else {
+    if (-not $(Test-Path -Path $Path)) {
         # either task file is not a task file or someone tried to do more than allowed
         throw "Script {0} not found!" -f $Path
+    }
+
+    $fileContent = Get-Content $Path -Raw # loading content of script
+    $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput( # parsing script
+        $fileContent, [ref]$null, [ref]$null)
+    # searching for statements
+    foreach ($statement in $scriptAst.EndBlock.Statements) {
+        $name = $($statement -Split " ")[0] # get name of a command
+        if (-not $name) {
+            continue
+        }
+
+        if ($name -notin $AllowedFunctions) { # we allow defined names only
+            throw "line {0}: {1} allowed only" `
+                -f $statement.Extent.StartLineNumber, $($AllowedFunctions -Join " and ")
+        }
     }
 }
 
