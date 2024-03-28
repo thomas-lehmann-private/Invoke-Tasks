@@ -32,7 +32,7 @@ Register-AnalyseTask -Name "AnalyzeScriptBlockCyclomaticComplexity" {
     $maximumComplexity = `
         if ($TaskData.analyseConfiguration.AnalyzeScriptBlockCyclomaticComplexity) {
             $TaskData.analyseConfiguration.AnalyzeScriptBlockCyclomaticComplexity.MaximumComplexity
-        } else { 9 } # default value
+        } else { 10 } # default value
 
     $logicalOperators = @(                                      # list of logical operators
         [System.Management.Automation.Language.TokenKind]::And, # 'and' operator
